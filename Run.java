@@ -123,6 +123,11 @@ class Book implements Serializable {
     String bookTitle;
     int numOfCopy;
 
+    Book() {
+        bookTitle = "";
+        numOfCopy = 0;
+    }
+
     Book(String bookTitle, int numOfCopy) {
 
     }
@@ -256,9 +261,9 @@ public class Run {
             File dataPath = new File("data");
             dataPath.mkdir();
             int option;
-            Run tmp = new Run();
+            Run run = new Run();
             Student student = new Student();
-            Book book = null;
+            Book book = new Book();
             Print p = new Print();
             while (true) {
                 p.print("\033[H\033[2J");
@@ -275,32 +280,32 @@ public class Run {
                     case 1:
                         p.print("\033[H\033[2J");
                         System.out.flush();
-                        tmp.registration();
+                        run.registration();
                         break;
                     case 2:
                         p.print("\033[H\033[2J");
                         System.out.flush();
-                        tmp.addNewBook(book);
+                        run.addNewBook(book);
                         break;
                     case 3:
                         p.print("\033[H\033[2J");
                         System.out.flush();
-                        tmp.printAllBook();
+                        run.printAllBook();
                         break;
                     case 4:
                         p.print("\033[H\033[2J");
                         System.out.flush();
-                        tmp.printAllBorrower(book);
+                        run.printAllBorrower(book);
                         break;
                     case 5:
                         p.print("\033[H\033[2J");
                         System.out.flush();
-                        tmp.borrowRequest("", student);
+                        run.borrowRequest("", student);
                         break;
                     case 6:
                         p.print("\033[H\033[2J");
                         System.out.flush();
-                        tmp.returned("bookTitle", student);
+                        run.returned("bookTitle", student);
                         break;
                     default:
                         break;
