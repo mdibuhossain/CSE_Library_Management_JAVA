@@ -1,17 +1,12 @@
-import java.beans.Expression;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
-
-import javax.xml.catalog.Catalog;
 
 class Print {
     void println(String st) {
@@ -53,19 +48,22 @@ class FileIO {
     }
 
     public void printObjectFromFile(String path) throws IOException {
-        FileInputStream fileIn = new FileInputStream(Dir.get(path));
-        ObjectInputStream objectIn = new ObjectInputStream(fileIn);
-        try {
-            while (fileIn.available() != 0) {
-                Student tmp = (Student) objectIn.readObject();
-                // tmp.getAll();
-                System.out.printf("%s %s %s\n", tmp.name, tmp.id, tmp.phone);
+        File file = new File(Dir.get(path));
+        if (file.exists() && file.isFile()) {
+            FileInputStream fileIn = new FileInputStream(Dir.get(path));
+            ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+            try {
+                while (fileIn.available() != 0) {
+                    Student tmp = (Student) objectIn.readObject();
+                    // tmp.getAll();
+                    System.out.printf("%s %s %s\n", tmp.name, tmp.id, tmp.phone);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                fileIn.close();
+                objectIn.close();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            fileIn.close();
-            objectIn.close();
         }
     }
 
@@ -265,8 +263,12 @@ public class Run {
             while (true) {
                 p.print("\033[H\033[2J");
                 System.out.flush();
-                p.println(
-                        "Registration: 1 \nAdd New Book: 2 \nPrint Books: 3 \nPrint Borrower: 4 \nBorrow Request: 5 \nReturned: 6");
+                p.println("1. Registration");
+                p.println("2. Add New Book");
+                p.println("3. Print Books");
+                p.println("4. Print Borrower");
+                p.println("5. Borrow Request");
+                p.println("6. Returned\n");
                 p.print("Enter Value: ");
                 option = scanner.nextInt();
                 switch (option) {
