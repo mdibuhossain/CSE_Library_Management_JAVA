@@ -41,6 +41,7 @@ class FileIO {
     public FileIO() {
         Dir.put("studentsPath", "data\\students.bin");
         Dir.put("booksPath", "data\\books.bin");
+        Dir.put("borrowersPath", "data\\borrowers.bin");
     }
 
     public void writeObjectToFile(Object obj, String path) throws IOException {
@@ -197,7 +198,7 @@ class Student implements Serializable {
     }
 }
 
-class Book implements Serializable {
+class Book extends Student {
     String bookTitle;
     int numOfCopy;
 
@@ -288,8 +289,12 @@ public class Run {
 
     // returns the borrower list of this book
     void printAllBorrower(Book book) {
-        // implement this method
-        System.out.println("Print Borrower");
+        System.out.println("Borrowers\n");
+        FileIO IO = new FileIO();
+
+        String fmt = "%-10s %-20s %-15s %-20s %-10s\n";
+        System.out.printf(fmt, "ID", "Name", "Phone", "Book title", "Number of copy");
+        System.out.printf(fmt, "-------", "--------", "-------", "----------", "---------------");
         try {
             System.in.read();
         } catch (Exception e) {
