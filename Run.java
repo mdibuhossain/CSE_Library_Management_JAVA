@@ -152,7 +152,7 @@ class FileIO {
             ObjectInputStream objectIn = new ObjectInputStream(fileIn);
             try {
                 while (fileIn.available() != 0) {
-                    if (path.equals("studentsPath")) {
+                    if (path.equalsIgnoreCase("studentsPath")) {
                         Student check = (Student) objectIn.readObject();
                         Student tmp = (Student) data;
                         if (tmp.id.equalsIgnoreCase(check.id)) {
@@ -357,10 +357,18 @@ public class Run {
     }
 
     // call this method when a student requests to borrow a book
-    void borrowRequest(String bookTitle, Student student) {
-        // implement this method
-        Print p = new Print();
-        p.println("Borrow request");
+    void borrowRequest(String bookTitle, Student student) throws IOException {
+        System.out.println("Borrow request\n");
+        Scanner sc = new Scanner(System.in);
+        String id = "";
+
+        System.out.print("Enter your ID: ");
+        id = sc.nextLine();
+        Student checkStudent = new Student("", id, "");
+        if (checkStudent.isStudentAlreadyExist(checkStudent)) {
+            System.out.println("User registered");
+        }
+
         try {
             System.in.read();
         } catch (Exception e) {
