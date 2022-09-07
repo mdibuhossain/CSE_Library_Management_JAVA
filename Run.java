@@ -124,6 +124,11 @@ class FileIO {
                         String fmt = "%-30s %s\n";
                         System.out.printf(fmt, tmp.bookTitle, tmp.numOfCopy);
                         count++;
+                    } else if (path.equals("borrowersPath")) {
+                        Book tmp = (Book) objectIn.readObject();
+                        String fmt = "%-10s %-20s %-15s %-20s %-10s\n";
+                        System.out.printf(fmt, tmp.id, tmp.name, tmp.phone, tmp.bookTitle, "1");
+                        count++;
                     }
                 }
                 if (count == 0) {
@@ -288,13 +293,14 @@ public class Run {
     }
 
     // returns the borrower list of this book
-    void printAllBorrower(Book book) {
+    void printAllBorrower(Book book) throws IOException {
         System.out.println("Borrowers\n");
         FileIO IO = new FileIO();
 
         String fmt = "%-10s %-20s %-15s %-20s %-10s\n";
         System.out.printf(fmt, "ID", "Name", "Phone", "Book title", "Number of copy");
         System.out.printf(fmt, "-------", "--------", "-------", "----------", "---------------");
+        IO.printObjectFromFile("borrowersPath");
         try {
             System.in.read();
         } catch (Exception e) {
