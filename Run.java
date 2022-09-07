@@ -4,8 +4,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 class Print {
@@ -15,6 +17,20 @@ class Print {
 
     void print(String st) {
         System.out.print(st);
+    }
+}
+
+class AppendingObjectOutputStream extends ObjectOutputStream {
+    public AppendingObjectOutputStream(OutputStream out) throws IOException {
+        super(out);
+    }
+
+    @Override
+    protected void writeStreamHeader() throws IOException {
+        // do not write a header, but reset:
+        // this line added after another question
+        // showed a problem with the original
+        reset();
     }
 }
 
@@ -53,10 +69,23 @@ class FileIO {
             FileInputStream fileIn = new FileInputStream(Dir.get(path));
             ObjectInputStream objectIn = new ObjectInputStream(fileIn);
             try {
+                int count = 0;
                 while (fileIn.available() != 0) {
-                    Student tmp = (Student) objectIn.readObject();
-                    // tmp.getAll();
-                    System.out.printf("%s %s %s\n", tmp.name, tmp.id, tmp.phone);
+                    if (path.equals("studentsPath")) {
+                        Student tmp = (Student) objectIn.readObject();
+                        // tmp.getAll();
+                        System.out.printf("%s %s %s\n", tmp.name, tmp.id, tmp.phone);
+                        count++;
+                    } else if (path.equals("booksPath")) {
+                        Book tmp = (Book) objectIn.readObject();
+                        // tmp.getAll();
+                        String fmt = "%-30s %s\n";
+                        System.out.printf(fmt, tmp.bookTitle, tmp.numOfCopy);
+                        count++;
+                    }
+                }
+                if (count == 0) {
+                    System.out.println("No data found");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -64,10 +93,12 @@ class FileIO {
                 fileIn.close();
                 objectIn.close();
             }
+        } else {
+            System.out.println("No data found");
         }
     }
 
-    public boolean isStudentExistInDB(Object data, String path) throws IOException {
+    public boolean isDataExistInDB(Object data, String path) throws IOException {
         File file = new File(Dir.get(path));
         if (file.isFile() && file.exists()) {
             FileInputStream fileIn = new FileInputStream(Dir.get(path));
@@ -78,6 +109,12 @@ class FileIO {
                         Student check = (Student) objectIn.readObject();
                         Student tmp = (Student) data;
                         if (tmp.id.equalsIgnoreCase(check.id)) {
+                            return true;
+                        }
+                    } else if (path.equals("booksPath")) {
+                        Book check = (Book) objectIn.readObject();
+                        Book tmp = (Book) data;
+                        if (tmp.bookTitle.equalsIgnoreCase(check.bookTitle)) {
                             return true;
                         }
                     }
@@ -112,8 +149,8 @@ class Student implements Serializable {
 
     public boolean isStudentAlreadyExist(Student student) throws IOException {
         FileIO IO = new FileIO();
-        // IO.isStudentExistInDB(student, "studentsPath");
-        if (IO.isStudentExistInDB(student, "studentsPath") == true)
+        // IO.isDataExistInDB(student, "studentsPath");
+        if (IO.isDataExistInDB(student, "studentsPath") == true)
             return true;
         return false;
     }
@@ -129,7 +166,8 @@ class Book implements Serializable {
     }
 
     Book(String bookTitle, int numOfCopy) {
-
+        this.bookTitle = bookTitle;
+        this.numOfCopy = numOfCopy;
     }
 
     // this method retures whether this is book available to borrow or not
@@ -151,9 +189,34 @@ class Book implements Serializable {
 
 public class Run {
     // add a new Book in the library
-    void addNewBook(Book book) {
-        // implement this method
-        System.out.println("Add new book");
+    void addNewBook() throws IOException {
+        System.out.println("Add new book\n");
+
+        Scanner sc = new Scanner(System.in);
+        String bookTitle = "";
+        int numOfCopy = 0;
+
+        System.out.printf("%-20s", "Book title:");
+        while (bookTitle.length() == 0)
+            bookTitle = sc.nextLine();
+
+        System.out.printf("%-20s", "Number of copy:");
+        try {
+            numOfCopy = sc.nextInt();
+        } catch (InputMismatchException e) {
+            System.out.println("\nNumber of copy field should integer number\nTry again");
+            try {
+                System.in.read();
+            } catch (Exception er) {
+            }
+            return;
+        }
+
+        Book book = new Book(bookTitle, numOfCopy);
+        FileIO IO = new FileIO();
+        IO.printObjectFromFile("booksPath");
+        // IO.writeObjectToFile(book, "booksPath");
+
         try {
             System.in.read();
         } catch (Exception e) {
@@ -167,9 +230,15 @@ public class Run {
     }
 
     // print all the books in the library
-    void printAllBook() {
+    void printAllBook() throws IOException {
         // implement this method
-        System.out.println("Print Books");
+        System.out.println("Print Books\n");
+        FileIO IO = new FileIO();
+
+        String fmt = "%-30s %s\n";
+        System.out.printf(fmt, "Book title", "Number of copy");
+        System.out.printf(fmt, "---------------------", "---------------------");
+        IO.printObjectFromFile("booksPath");
         try {
             System.in.read();
         } catch (Exception e) {
@@ -190,8 +259,8 @@ public class Run {
     void registration() throws IOException {
         // Print p = new Print();
         // String fmt = "%1$4s %2$10s %3$10s%n";
-        Scanner sc = new Scanner(System.in);
         System.out.println("Registration new book\n");
+        Scanner sc = new Scanner(System.in);
 
         String name = "";
         String id = "";
@@ -285,7 +354,7 @@ public class Run {
                     case 2:
                         p.print("\033[H\033[2J");
                         System.out.flush();
-                        run.addNewBook(book);
+                        run.addNewBook();
                         break;
                     case 3:
                         p.print("\033[H\033[2J");
