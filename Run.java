@@ -214,9 +214,9 @@ public class Run {
 
         Book book = new Book(bookTitle, numOfCopy);
         FileIO IO = new FileIO();
-        IO.printObjectFromFile("booksPath");
-        // IO.writeObjectToFile(book, "booksPath");
+        IO.writeObjectToFile(book, "booksPath");
 
+        System.out.println("Successfully Added");
         try {
             System.in.read();
         } catch (Exception e) {
@@ -232,7 +232,7 @@ public class Run {
     // print all the books in the library
     void printAllBook() throws IOException {
         // implement this method
-        System.out.println("Print Books\n");
+        System.out.println("Available Books\n");
         FileIO IO = new FileIO();
 
         String fmt = "%-30s %s\n";
@@ -285,14 +285,15 @@ public class Run {
 
         if (student.isStudentAlreadyExist(student) == true) {
             System.out.println("Student ID already exist");
-            try {
-                System.in.read();
-            } catch (Exception e) {
-            }
         } else {
             FileIO IO = new FileIO();
             // IO.printObjectFromFile("studentsPath");
             IO.writeObjectToFile(student, "studentsPath");
+            System.out.println("Successfully registered");
+        }
+        try {
+            System.in.read();
+        } catch (Exception e) {
         }
 
     }
