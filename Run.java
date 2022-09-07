@@ -1,9 +1,81 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
-class Student {
-    Student ID; // this value must be unique, no two different can have same id
-    Student name, mobile;
+class Print {
+    void println(String st) {
+        System.out.println(st);
+    }
 
+    void print(String st) {
+        System.out.print(st);
+    }
+}
+
+class FileIO {
+    private HashMap<String, String> Dir = new HashMap<String, String>();
+
+    public FileIO() {
+        Dir.put("studentsPath", "data\\students.bin");
+        Dir.put("booksPath", "data\\books.bin");
+    }
+
+    public void writeObjectToFile(Object[] obj) throws IOException {
+        File file = new File(Dir.get("studentsPath"));
+        long fileSize = file.length();
+        FileOutputStream fileOut = new FileOutputStream(Dir.get("studentsPath"), true);
+        ObjectOutputStream objectOut = null;
+        if (fileSize == 0) {
+            objectOut = new ObjectOutputStream(fileOut);
+        } else {
+            objectOut = new AppendingObjectOutputStream(fileOut);
+        }
+        try {
+            System.out.println(fileSize);
+            for (int i = 0; i < obj.length; i++) {
+                objectOut.writeObject(obj[i]);
+                objectOut.flush();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            objectOut.close();
+            fileOut.close();
+        }
+    }
+
+    public void printObjectFromFile(Object[] objs) throws IOException {
+        FileInputStream fileIn = new FileInputStream(studentPath);
+        ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+        try {
+            while (fileIn.available() != 0) {
+                Object tmp = (Object) objectIn.readObject();
+                // tmp.getAll();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            fileIn.close();
+            objectIn.close();
+        }
+    }
+}
+
+class Student {
+    public String name;
+    public String id;
+    public String phone;
+
+    public Student() {
+        name = id = phone = "";
+    }
     // add necessary code if need
 }
 
@@ -32,12 +104,13 @@ class Book {
     }
 }
 
-public class Run {
+public class Run extends Print {
 
     // add a new Book in the library
     void addNewBook(Book book) {
         // implement this method
-        System.out.println("Add new book");
+        Print p = new Print();
+        p.println("Add new book");
         try {
             System.in.read();
         } catch (Exception e) {
@@ -53,7 +126,8 @@ public class Run {
     // print all the books in the library
     void printAllBook() {
         // implement this method
-        System.out.println("Print Books");
+        Print p = new Print();
+        p.println("Print Books");
         try {
             System.in.read();
         } catch (Exception e) {
@@ -63,7 +137,8 @@ public class Run {
     // returns the borrower list of this book
     void printAllBorrower(Book book) {
         // implement this method
-        System.out.println("Print Borrower");
+        Print p = new Print();
+        p.println("Print Borrower");
         try {
             System.in.read();
         } catch (Exception e) {
@@ -72,8 +147,25 @@ public class Run {
 
     // register a student if he/she is not registered before
     void registration(Student student) {
-        // implement this method
-        System.out.println("Registration new book");
+        // Print p = new Print();
+        // String fmt = "%1$4s %2$10s %3$10s%n";
+        Scanner sc = new Scanner(System.in);
+        println("Registration new book\n");
+
+        System.out.printf("%-20s", "Name");
+        while (student.name.length() == 0) {
+            student.name = sc.nextLine();
+        }
+
+        System.out.printf("%-20s", "ID");
+        while (student.id.length() == 0) {
+            student.id = sc.nextLine();
+        }
+
+        System.out.printf("%-20s", "Phone");
+        while (student.phone.length() == 0) {
+            student.phone = sc.nextLine();
+        }
         try {
             System.in.read();
         } catch (Exception e) {
@@ -89,7 +181,8 @@ public class Run {
     // call this method when a student requests to borrow a book
     void borrowRequest(String bookTitle, Student student) {
         // implement this method
-        System.out.println("Borrow request");
+        Print p = new Print();
+        p.println("Borrow request");
         try {
             System.in.read();
         } catch (Exception e) {
@@ -99,7 +192,8 @@ public class Run {
     // call this method when a student returns a book
     void returned(String bookTitle, Student student) {
         // implement this method
-        System.out.println("Returned");
+        Print p = new Print();
+        p.println("Returned");
         try {
             System.in.read();
         } catch (Exception e) {
@@ -110,62 +204,68 @@ public class Run {
         int option;
         try (Scanner scanner = new Scanner(System.in)) {
             Run tmp = new Run();
-            Student student = null;
+            Student student = new Student();
             Book book = null;
+            Print p = new Print();
             while (true) {
-                System.out.print("\033[H\033[2J");
+                p.print("\033[H\033[2J");
                 System.out.flush();
-                System.out.println(
+                p.println(
                         "Registration: 1 \nAdd New Book: 2 \nPrint Books: 3 \nPrint Borrower: 4 \nBorrow Request: 5 \nReturned: 6");
-                System.out.print("Enter Value: ");
+                p.print("Enter Value: ");
                 option = scanner.nextInt();
                 switch (option) {
                     case 1:
+                        p.print("\033[H\033[2J");
+                        System.out.flush();
                         tmp.registration(student);
                         break;
                     case 2:
+                        p.print("\033[H\033[2J");
+                        System.out.flush();
                         tmp.addNewBook(book);
                         break;
                     case 3:
+                        p.print("\033[H\033[2J");
+                        System.out.flush();
                         tmp.printAllBook();
                         break;
                     case 4:
+                        p.print("\033[H\033[2J");
+                        System.out.flush();
                         tmp.printAllBorrower(book);
                         break;
                     case 5:
+                        p.print("\033[H\033[2J");
+                        System.out.flush();
                         tmp.borrowRequest("", student);
                         break;
                     case 6:
+                        p.print("\033[H\033[2J");
+                        System.out.flush();
                         tmp.returned("bookTitle", student);
                         break;
                     default:
                         break;
                 }
 
-
-
-
-
-
-
-                
                 // if (option == 1) {
                 // // take input id, name and mobile from student
-                // System.out.println("Registration new book");
+                // p.println("Registration new book");
                 // } else if (option == 2) {
-                // System.out.println("Add new book");
+                // p.println("Add new book");
                 // }
                 // if (option == 3) {
-                // System.out.println("Print Books");
+                // p.println("Print Books");
                 // }
                 // if (option == 4) {
-                // System.out.println("Print Borrower");
+                // p.println("Print Borrower");
                 // }
                 // if (option == 5) {
-                // System.out.println("Borrow request");
+                // p.println("Borrow request");
                 // }
                 // if (option == 6) {
-                // System.out.println("Returned");
+                // p.println("Returned");
                 // }
             }
         }
