@@ -69,7 +69,7 @@ class FileIO {
         }
     }
 
-    public boolean isStudentExistInDB(Student data, String path) throws IOException {
+    public boolean isStudentExistInDB(Object data, String path) throws IOException {
         File file = new File(Dir.get(path));
         if (file.isFile() && file.exists()) {
             FileInputStream fileIn = new FileInputStream(Dir.get(path));
@@ -80,7 +80,6 @@ class FileIO {
                         Student check = (Student) objectIn.readObject();
                         Student tmp = (Student) data;
                         if (tmp.id.equalsIgnoreCase(check.id)) {
-                            // System.out.printf("%s %s %s\n", check.name, check.id, check.phone);
                             return true;
                         }
                     }
