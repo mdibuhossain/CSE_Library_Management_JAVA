@@ -1,3 +1,4 @@
+import java.beans.Expression;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -7,6 +8,8 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+
+import javax.xml.catalog.Catalog;
 
 class Print {
     void println(String st) {
@@ -26,10 +29,10 @@ class FileIO {
         Dir.put("booksPath", "data\\books.bin");
     }
 
-    public void writeObjectToFile(Object[] obj) throws IOException {
-        File file = new File(Dir.get("studentsPath"));
+    public void writeObjectToFile(Object obj, String path) throws IOException {
+        File file = new File(Dir.get(path));
         long fileSize = file.length();
-        FileOutputStream fileOut = new FileOutputStream(Dir.get("studentsPath"), true);
+        FileOutputStream fileOut = new FileOutputStream(Dir.get(path), true);
         ObjectOutputStream objectOut = null;
         if (fileSize == 0) {
             objectOut = new ObjectOutputStream(fileOut);
@@ -38,11 +41,8 @@ class FileIO {
         }
         try {
             System.out.println(fileSize);
-            for (int i = 0; i < obj.length; i++) {
-                objectOut.writeObject(obj[i]);
-                objectOut.flush();
-            }
-
+            objectOut.writeObject(obj);
+            objectOut.flush();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -51,8 +51,8 @@ class FileIO {
         }
     }
 
-    public void printObjectFromFile(Object[] objs) throws IOException {
-        FileInputStream fileIn = new FileInputStream(studentPath);
+    public void printObjectFromFile(Object[] objs, String path) throws IOException {
+        FileInputStream fileIn = new FileInputStream(Dir.get(path));
         ObjectInputStream objectIn = new ObjectInputStream(fileIn);
         try {
             while (fileIn.available() != 0) {
@@ -104,13 +104,12 @@ class Book {
     }
 }
 
-public class Run extends Print {
+public class Run extends FileIO {
 
     // add a new Book in the library
     void addNewBook(Book book) {
         // implement this method
-        Print p = new Print();
-        p.println("Add new book");
+        System.out.println("Add new book");
         try {
             System.in.read();
         } catch (Exception e) {
@@ -126,8 +125,7 @@ public class Run extends Print {
     // print all the books in the library
     void printAllBook() {
         // implement this method
-        Print p = new Print();
-        p.println("Print Books");
+        System.out.println("Print Books");
         try {
             System.in.read();
         } catch (Exception e) {
@@ -137,8 +135,7 @@ public class Run extends Print {
     // returns the borrower list of this book
     void printAllBorrower(Book book) {
         // implement this method
-        Print p = new Print();
-        p.println("Print Borrower");
+        System.out.println("Print Borrower");
         try {
             System.in.read();
         } catch (Exception e) {
@@ -146,12 +143,12 @@ public class Run extends Print {
     }
 
     // register a student if he/she is not registered before
-    void registration(Student student) {
+    void registration() throws IOException {
         // Print p = new Print();
         // String fmt = "%1$4s %2$10s %3$10s%n";
         Scanner sc = new Scanner(System.in);
-        println("Registration new book\n");
-
+        Student student = new Student();
+        System.out.println("Registration new book\n");
         System.out.printf("%-20s", "Name");
         while (student.name.length() == 0) {
             student.name = sc.nextLine();
@@ -166,10 +163,7 @@ public class Run extends Print {
         while (student.phone.length() == 0) {
             student.phone = sc.nextLine();
         }
-        try {
-            System.in.read();
-        } catch (Exception e) {
-        }
+        writeObjectToFile(student, "stduentsPath");
     }
 
     // search the student using studentID
@@ -201,8 +195,10 @@ public class Run extends Print {
     }
 
     public static void main(String[] args) {
-        int option;
         try (Scanner scanner = new Scanner(System.in)) {
+            File dataPath = new File("data");
+            dataPath.mkdir();
+            int option;
             Run tmp = new Run();
             Student student = new Student();
             Book book = null;
@@ -218,7 +214,7 @@ public class Run extends Print {
                     case 1:
                         p.print("\033[H\033[2J");
                         System.out.flush();
-                        tmp.registration(student);
+                        tmp.registration();
                         break;
                     case 2:
                         p.print("\033[H\033[2J");
@@ -268,6 +264,7 @@ public class Run extends Print {
                 // p.println("Returned");
                 // }
             }
+        } catch (Exception e) {
         }
     }
 
