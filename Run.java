@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -53,8 +54,48 @@ class FileIO {
             objectOut = new AppendingObjectOutputStream(fileOut);
         }
         try {
-            objectOut.writeObject(obj);
-            objectOut.flush();
+            // If write Book data then insert uniquely
+            if (path.equals("booksPath")) {
+                FileInputStream fileIn = new FileInputStream(Dir.get(path));
+                ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+                ArrayList<Book> tmpData = new ArrayList<Book>();
+                tmpData.add((Book) obj);
+                try {
+                    if (file.exists() && file.isFile()) {
+                        while (fileIn.available() != 0) {
+                            Book tmp = (Book) objectIn.readObject();
+                            if (tmp.bookTitle.equalsIgnoreCase(tmpData.get(0).bookTitle)) {
+                                continue;
+                            }
+                            tmpData.add(tmp);
+                        }
+                    }
+                } catch (Exception e) {
+                } finally {
+                    fileIn.close();
+                    objectIn.close();
+                    fileOut.close();
+                    objectOut.close();
+                }
+                // delete previous data file
+                file.delete();
+                // Over-write all the data again with the new data
+                FileOutputStream fileOut2 = new FileOutputStream(Dir.get(path), true);
+                ObjectOutputStream objectOut2 = new ObjectOutputStream(fileOut2);
+                try {
+                    for (int i = 0; i < tmpData.size(); i++) {
+                        objectOut2.writeObject(tmpData.get(i));
+                        objectOut2.flush();
+                    }
+                } catch (Exception e) {
+                } finally {
+                    fileOut2.close();
+                    objectOut2.close();
+                }
+            } else {
+                objectOut.writeObject(obj);
+                objectOut.flush();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
