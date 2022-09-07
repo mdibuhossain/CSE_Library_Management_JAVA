@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -67,6 +68,34 @@ class FileIO {
             objectIn.close();
         }
     }
+
+    public boolean isStudentExistInDB(Student data, String path) throws IOException {
+        File file = new File(Dir.get(path));
+        if (file.isFile() && file.exists()) {
+            FileInputStream fileIn = new FileInputStream(Dir.get(path));
+            ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+            try {
+                while (fileIn.available() != 0) {
+                    if (path.equals("studentsPath")) {
+                        Student check = (Student) objectIn.readObject();
+                        Student tmp = (Student) data;
+                        if (tmp.id.equalsIgnoreCase(check.id)) {
+                            // System.out.printf("%s %s %s\n", check.name, check.id, check.phone);
+                            return true;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                fileIn.close();
+                objectIn.close();
+            }
+            return false;
+        }
+        return false;
+    }
+
 }
 
 class Student implements Serializable {
@@ -83,12 +112,19 @@ class Student implements Serializable {
         this.id = id;
         this.phone = phone;
     }
-    // add necessary code if need
+
+    public boolean isStudentAlreadyExist(Student student) throws IOException {
+        FileIO IO = new FileIO();
+        // IO.isStudentExistInDB(student, "studentsPath");
+        if (IO.isStudentExistInDB(student, "studentsPath") == true)
+            return true;
+        return false;
+    }
 }
 
-class Book {
+class Book implements Serializable {
     String bookTitle;
-    int numOfCopy; // how many copies of this book are in this library
+    int numOfCopy;
 
     Book(String bookTitle, int numOfCopy) {
 
@@ -154,26 +190,40 @@ public class Run {
         // String fmt = "%1$4s %2$10s %3$10s%n";
         Scanner sc = new Scanner(System.in);
         System.out.println("Registration new book\n");
-        System.out.printf("%-20s", "Name");
+
         String name = "";
         String id = "";
         String phone = "";
-        while (name.length() == 0) {
-            name = sc.nextLine();
-        }
 
-        System.out.printf("%-20s", "ID");
+        System.out.printf("%-20s", "ID:");
         while (id.length() == 0) {
             id = sc.nextLine();
         }
 
-        System.out.printf("%-20s", "Phone");
+        System.out.printf("%-20s", "Name:");
+        while (name.length() == 0) {
+            name = sc.nextLine();
+        }
+
+        System.out.printf("%-20s", "Phone:");
         while (phone.length() == 0) {
             phone = sc.nextLine();
         }
+
         Student student = new Student(name, id, phone);
-        FileIO file = new FileIO();
-        file.writeObjectToFile(student, "studentsPath");
+
+        if (student.isStudentAlreadyExist(student) == true) {
+            System.out.println("Student ID already exist");
+            try {
+                System.in.read();
+            } catch (Exception e) {
+            }
+        } else {
+            FileIO IO = new FileIO();
+            // IO.printObjectFromFile("studentsPath");
+            IO.writeObjectToFile(student, "studentsPath");
+        }
+
     }
 
     // search the student using studentID
