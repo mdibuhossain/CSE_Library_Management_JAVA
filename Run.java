@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -22,7 +23,7 @@ class Print {
 }
 
 class FileIO {
-    private HashMap<String, String> Dir = new HashMap<String, String>();
+    public HashMap<String, String> Dir = new HashMap<String, String>();
 
     public FileIO() {
         Dir.put("studentsPath", "data\\students.bin");
@@ -40,7 +41,6 @@ class FileIO {
             objectOut = new AppendingObjectOutputStream(fileOut);
         }
         try {
-            System.out.println(fileSize);
             objectOut.writeObject(obj);
             objectOut.flush();
         } catch (Exception e) {
@@ -51,13 +51,14 @@ class FileIO {
         }
     }
 
-    public void printObjectFromFile(Object[] objs, String path) throws IOException {
+    public void printObjectFromFile(String path) throws IOException {
         FileInputStream fileIn = new FileInputStream(Dir.get(path));
         ObjectInputStream objectIn = new ObjectInputStream(fileIn);
         try {
             while (fileIn.available() != 0) {
-                Object tmp = (Object) objectIn.readObject();
+                Student tmp = (Student) objectIn.readObject();
                 // tmp.getAll();
+                System.out.printf("%s %s %s\n", tmp.name, tmp.id, tmp.phone);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -68,13 +69,19 @@ class FileIO {
     }
 }
 
-class Student {
+class Student implements Serializable {
     public String name;
     public String id;
     public String phone;
 
     public Student() {
         name = id = phone = "";
+    }
+
+    public Student(String name, String id, String phone) {
+        this.name = name;
+        this.id = id;
+        this.phone = phone;
     }
     // add necessary code if need
 }
@@ -104,8 +111,7 @@ class Book {
     }
 }
 
-public class Run extends FileIO {
-
+public class Run {
     // add a new Book in the library
     void addNewBook(Book book) {
         // implement this method
@@ -147,23 +153,27 @@ public class Run extends FileIO {
         // Print p = new Print();
         // String fmt = "%1$4s %2$10s %3$10s%n";
         Scanner sc = new Scanner(System.in);
-        Student student = new Student();
         System.out.println("Registration new book\n");
         System.out.printf("%-20s", "Name");
-        while (student.name.length() == 0) {
-            student.name = sc.nextLine();
+        String name = "";
+        String id = "";
+        String phone = "";
+        while (name.length() == 0) {
+            name = sc.nextLine();
         }
 
         System.out.printf("%-20s", "ID");
-        while (student.id.length() == 0) {
-            student.id = sc.nextLine();
+        while (id.length() == 0) {
+            id = sc.nextLine();
         }
 
         System.out.printf("%-20s", "Phone");
-        while (student.phone.length() == 0) {
-            student.phone = sc.nextLine();
+        while (phone.length() == 0) {
+            phone = sc.nextLine();
         }
-        writeObjectToFile(student, "stduentsPath");
+        Student student = new Student(name, id, phone);
+        FileIO file = new FileIO();
+        file.writeObjectToFile(student, "studentsPath");
     }
 
     // search the student using studentID
