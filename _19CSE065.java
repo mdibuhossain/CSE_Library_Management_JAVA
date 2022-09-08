@@ -180,7 +180,7 @@ class FileIO {
         }
     }
 
-    public ArrayList<Book> printObjectFromFile(String path) throws IOException {
+    public ArrayList<Book> getObjectsFromFile(String path, boolean print) throws IOException {
         File file = new File(Dir.get(path));
         ArrayList<Book> result = new ArrayList<Book>();
         if (file.exists() && file.isFile()) {
@@ -195,20 +195,23 @@ class FileIO {
                         tmp2.id = tmp.id;
                         tmp2.phone = tmp.phone;
                         result.add(tmp2);
-                        System.out.printf("%s %s %s\n", tmp.name, tmp.id, tmp.phone);
+                        if (print)
+                            System.out.printf("%s %s %s\n", tmp.name, tmp.id, tmp.phone);
                     } else if (path.equals("booksPath")) {
                         Book tmp = (Book) objectIn.readObject();
                         result.add(tmp);
                         String fmt = "%-30s %s\n";
-                        System.out.printf(fmt, tmp.bookTitle, tmp.numOfCopy);
+                        if (print)
+                            System.out.printf(fmt, tmp.bookTitle, tmp.numOfCopy);
                     } else if (path.equals("borrowersPath")) {
                         Book tmp = (Book) objectIn.readObject();
                         result.add(tmp);
                         String fmt = "%-10s %-20s %-15s %-20s %-10s\n";
-                        System.out.printf(fmt, tmp.id, tmp.name, tmp.phone, tmp.bookTitle, "1");
+                        if (print)
+                            System.out.printf(fmt, tmp.id, tmp.name, tmp.phone, tmp.bookTitle, "1");
                     }
                 }
-                if (result.size() == 0) {
+                if (result.size() == 0 && print) {
                     System.out.println("No data found");
                 }
             } catch (Exception e) {
@@ -219,7 +222,8 @@ class FileIO {
             }
             return (result);
         } else {
-            System.out.println("No data found");
+            if (print)
+                System.out.println("No data found");
             return (result);
         }
     }
@@ -362,7 +366,7 @@ public class _19CSE065 {
         String fmt = "%-30s %s\n";
         System.out.printf(fmt, "Book title", "Number of copy");
         System.out.printf(fmt, "---------------------", "---------------------");
-        IO.printObjectFromFile("booksPath");
+        IO.getObjectsFromFile("booksPath", true);
         try {
             System.in.read();
         } catch (Exception e) {
@@ -377,7 +381,7 @@ public class _19CSE065 {
         String fmt = "%-10s %-20s %-15s %-20s %-10s\n";
         System.out.printf(fmt, "ID", "Name", "Phone", "Book title", "Number of copy");
         System.out.printf(fmt, "-------", "--------", "-------", "----------", "---------------");
-        IO.printObjectFromFile("borrowersPath");
+        IO.getObjectsFromFile("borrowersPath", true);
         try {
             System.in.read();
         } catch (Exception e) {
@@ -416,7 +420,7 @@ public class _19CSE065 {
             System.out.println("Student ID already exist");
         } else {
             FileIO IO = new FileIO();
-            // IO.printObjectFromFile("studentsPath");
+            // IO.getObjectsFromFile("studentsPath");
             IO.writeObjectToFile(student, "studentsPath");
             System.out.println("Successfully registered");
         }
@@ -449,7 +453,7 @@ public class _19CSE065 {
             String fmt = "%-30s %s\n";
             System.out.printf(fmt, "Book title", "Number of copy");
             System.out.printf(fmt, "---------------------", "---------------------");
-            ArrayList<Book> count = IO.printObjectFromFile("booksPath");
+            ArrayList<Book> count = IO.getObjectsFromFile("booksPath", true);
             if (count.size() > 0) {
                 String bookTitle = "";
                 System.out.print("\nEnter book name: ");
