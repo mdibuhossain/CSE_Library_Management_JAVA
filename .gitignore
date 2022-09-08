@@ -2,8 +2,6 @@
 
 *.class
 
-*.bat
-
 /data
 
 tempCodeRunnerFile.java
