@@ -49,10 +49,9 @@ class FileIO {
         FileIO IO = new FileIO();
         Book checkingBook = new Book();
         checkingBook.bookTitle = bookTitle;
-        Book fetchedBook = new Book();
-        fetchedBook = (Book) IO.isDataExistInDB(checkingBook, "booksPath");
-        if (!(fetchedBook != null && fetchedBook.bookTitle.equalsIgnoreCase(bookTitle)
-                && fetchedBook.numOfCopy > 0)) {
+        checkingBook = (Book) IO.isDataExistInDB(checkingBook, "booksPath");
+        if (!(checkingBook != null && checkingBook.bookTitle.equalsIgnoreCase(bookTitle)
+                && checkingBook.numOfCopy > 0)) {
             System.out.println("This book is not available right now!");
             try {
                 System.in.read();
