@@ -95,6 +95,7 @@ public class FileIO {
     public static void main(String[] args) throws IOException {
         File f = new File("data");
         f.mkdir();
+        File ff = new File("data\\JavaFileIOtest.bin");
         Student[] students = new Student[4];
         students[0] = new Student("ibrahim", "19CSE065", "01941688233");
         students[1] = new Student("Akash", "19CSE063", "01518455043");
@@ -107,5 +108,6 @@ public class FileIO {
         IO.writeObjectToFile(students);
         IO.writeObjectToFile(students);
         IO.printObjectFromFile(students);
+        ff.delete();
     }
 }

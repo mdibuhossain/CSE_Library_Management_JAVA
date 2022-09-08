@@ -54,40 +54,49 @@ class FileIO {
         ObjectOutputStream objectOut = null;
         if (fileSize == 0) {
             objectOut = new ObjectOutputStream(fileOut);
+            fileOut.close();
+            objectOut.close();
         } else {
             objectOut = new AppendingObjectOutputStream(fileOut);
+            fileOut.close();
+            objectOut.close();
         }
         try {
             FileInputStream fileIn = new FileInputStream(Dir.get("borrowersPath"));
             ObjectInputStream objectIn = new ObjectInputStream(fileIn);
             ArrayList<Book> reqBook = new ArrayList<Book>();
-            Book book = new Book(bookTitle, 1);
-            reqBook.add(book);
+            Book reqTmp = new Book(bookTitle, 1);
+            reqTmp.name = student.name;
+            reqTmp.id = student.id;
+            reqTmp.phone = student.phone;
+            reqBook.add(reqTmp);
             hashData.put(student.id, reqBook);
             try {
                 if (file.exists() && file.isFile()) {
                     while (fileIn.available() != 0) {
                         Book tmp = (Book) objectIn.readObject();
-                        ArrayList<Book> tmpBooks = (ArrayList<Book>) hashData.get(tmp.id).clone();
+                        ArrayList<Book> tmpBooks = hashData.get(tmp.id);
                         tmpBooks.add(tmp);
-                        hashData.put(student.id, tmpBooks);
+                        hashData.put(tmp.id, tmpBooks);
                     }
                 }
+            } catch (Exception e) {
+            } finally {
+                fileIn.close();
+                objectIn.close();
                 // delete previous data file
                 file.delete();
+            }
+            try {
                 // Over-write all the data again with the new data
                 FileOutputStream fileOut2 = new FileOutputStream(Dir.get("borrowersPath"), true);
                 ObjectOutputStream objectOut2 = new ObjectOutputStream(fileOut2);
                 try {
                     for (Map.Entry<String, ArrayList<Book>> entry : hashData.entrySet()) {
-                        String key = entry.getKey();
                         ArrayList<Book> value = entry.getValue();
                         for (int i = 0; i < value.size(); i++) {
-                            Book finalBook = value.get(i);
-                            finalBook.name = key;
-                            finalBook.id = student.id;
-                            finalBook.phone = student.phone;
-                            objectOut2.writeObject(finalBook);
+                            objectOut2.writeObject(value.get(i));
+                            // System.out.println(value.size());
                         }
                     }
                 } catch (Exception e) {
@@ -97,16 +106,14 @@ class FileIO {
                 }
             } catch (Exception e) {
             } finally {
-                fileIn.close();
-                objectIn.close();
-                fileOut.close();
-                objectOut.close();
+                // fileOut.close();
+                // objectOut.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            objectOut.close();
-            fileOut.close();
+            // objectOut.close();
+            // fileOut.close();
         }
     }
 
@@ -143,9 +150,9 @@ class FileIO {
                     objectIn.close();
                     fileOut.close();
                     objectOut.close();
+                    // delete previous data file
+                    file.delete();
                 }
-                // delete previous data file
-                file.delete();
                 // Over-write all the data again with the new data
                 FileOutputStream fileOut2 = new FileOutputStream(Dir.get(path), true);
                 ObjectOutputStream objectOut2 = new ObjectOutputStream(fileOut2);
