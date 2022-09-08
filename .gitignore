@@ -2,6 +2,8 @@
 
 *.class
 
+FileIO.java
+
 /data
 
 tempCodeRunnerFile.java
