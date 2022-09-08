@@ -47,6 +47,20 @@ class FileIO {
     }
 
     public void updateBookRequest(Student student, String bookTitle) throws IOException {
+        FileIO IO = new FileIO();
+        Book checkingBook = new Book();
+        checkingBook.bookTitle = bookTitle;
+        Book fetchedBook = new Book();
+        fetchedBook = (Book) IO.isDataExistInDB(checkingBook, "booksPath");
+        if (!(fetchedBook != null && fetchedBook.bookTitle.equalsIgnoreCase(bookTitle)
+                && fetchedBook.numOfCopy > 0)) {
+            System.out.println("This book is not available right now!");
+            try {
+                System.in.read();
+            } catch (Exception e) {
+            }
+            return;
+        }
         HashMap<String, ArrayList<Book>> hashData = new HashMap<String, ArrayList<Book>>();
         File file = new File(Dir.get("borrowersPath"));
         long fileSize = file.length();
@@ -246,7 +260,15 @@ class FileIO {
                 return null;
             } else if (path.equalsIgnoreCase("booksPath")) {
                 for (int i = 0; i < fetchData.size(); i++) {
-                    Student tmp = (Student) data;
+                    Book tmp = (Book) data;
+                    if (tmp.bookTitle.equalsIgnoreCase(fetchData.get(i).bookTitle)) {
+                        return fetchData.get(i);
+                    }
+                }
+                return null;
+            } else if (path.equalsIgnoreCase("borrowersPath")) {
+                for (int i = 0; i < fetchData.size(); i++) {
+                    Book tmp = (Book) data;
                     if (tmp.id.equalsIgnoreCase(fetchData.get(i).id)) {
                         return fetchData.get(i);
                     }
