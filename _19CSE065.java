@@ -43,8 +43,13 @@ class FileIO {
         Dir.put("borrowersPath", "data\\borrowers.bin");
     }
 
-    public void updateBookList(Book book, boolean isIncrease) {
-        //
+    public void updateBookList(Book book, boolean isIncrease) throws IOException {
+        FileIO IO = new FileIO();
+        if (isIncrease)
+            book.numOfCopy++;
+        else
+            book.numOfCopy--;
+        IO.writeObjectToFile(book, "booksPath");
     }
 
     public void updateBookRequest(Student student, String bookTitle) throws IOException {
@@ -63,6 +68,8 @@ class FileIO {
             }
             return;
         }
+        // also update booklist from DB
+        updateBookList(checkingBook, false);
 
         HashMap<String, ArrayList<Book>> hashData = new HashMap<String, ArrayList<Book>>();
         File file = new File(Dir.get("borrowersPath"));
