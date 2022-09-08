@@ -22,6 +22,16 @@ class Print {
     }
 }
 
+class CursorBreak {
+    void pause() {
+        System.out.println("\nPress any key to continue / back....");
+        try {
+            System.in.read();
+        } catch (Exception er) {
+        }
+    }
+}
+
 class AppendingObjectOutputStream extends ObjectOutputStream {
     public AppendingObjectOutputStream(OutputStream out) throws IOException {
         super(out);
@@ -350,6 +360,7 @@ class Book extends Student {
 
 public class _19CSE065 {
     Print p = new Print();
+    CursorBreak br = new CursorBreak();
 
     // add a new Book in the library
     void addNewBook() throws IOException {
@@ -359,19 +370,16 @@ public class _19CSE065 {
         String bookTitle = "";
         int numOfCopy = 0;
 
-        System.out.printf("%-20s", "Book title:");
+        System.out.printf("%-30s: ", "Book title (case insensitive)");
         while (bookTitle.length() == 0)
             bookTitle = sc.nextLine();
 
-        System.out.printf("%-20s", "Number of copy:");
+        System.out.printf("%-30s: ", "Number of copy");
         try {
             numOfCopy = sc.nextInt();
         } catch (InputMismatchException e) {
             p.println("\nNumber of copy field should integer number\nTry again");
-            try {
-                System.in.read();
-            } catch (Exception er) {
-            }
+            br.pause();
             return;
         }
 
@@ -379,11 +387,8 @@ public class _19CSE065 {
         FileIO IO = new FileIO();
         IO.writeObjectToFile(book, "booksPath");
 
-        p.println("Successfully Added");
-        try {
-            System.in.read();
-        } catch (Exception e) {
-        }
+        p.println("\nSuccessfully Added");
+        br.pause();
     }
 
     // search a book in the library whether it is avilable or not
@@ -402,10 +407,7 @@ public class _19CSE065 {
         System.out.printf(fmt, "Book title", "Number of copy");
         System.out.printf(fmt, "---------------------", "---------------------");
         IO.getObjectsFromFile("booksPath", true);
-        try {
-            System.in.read();
-        } catch (Exception e) {
-        }
+        br.pause();
     }
 
     // returns the borrower list of this book
@@ -417,10 +419,7 @@ public class _19CSE065 {
         System.out.printf(fmt, "ID", "Name", "Phone", "Book title", "Number of copy");
         System.out.printf(fmt, "-------", "--------", "-------", "----------", "---------------");
         IO.getObjectsFromFile("borrowersPath", true);
-        try {
-            System.in.read();
-        } catch (Exception e) {
-        }
+        br.pause();
     }
 
     // register a student if he/she is not registered before
@@ -434,17 +433,17 @@ public class _19CSE065 {
         String id = "";
         String phone = "";
 
-        System.out.printf("%-20s", "ID:");
+        System.out.printf("%-25s: ", "ID (case insensitive)");
         while (id.length() == 0) {
             id = sc.nextLine();
         }
 
-        System.out.printf("%-20s", "Name:");
+        System.out.printf("%-25s: ", "Name");
         while (name.length() == 0) {
             name = sc.nextLine();
         }
 
-        System.out.printf("%-20s", "Phone:");
+        System.out.printf("%-25s: ", "Phone");
         while (phone.length() == 0) {
             phone = sc.nextLine();
         }
@@ -452,17 +451,14 @@ public class _19CSE065 {
         Student student = new Student(name, id, phone);
 
         if (student.isStudentAlreadyExist(student) != null) {
-            p.println("Student ID already exist");
+            p.println("\nStudent ID already exist");
         } else {
             FileIO IO = new FileIO();
             // IO.getObjectsFromFile("studentsPath");
             IO.writeObjectToFile(student, "studentsPath");
-            p.println("Successfully registered");
+            p.println("\nSuccessfully registered");
         }
-        try {
-            System.in.read();
-        } catch (Exception e) {
-        }
+        br.pause();
 
     }
 
@@ -478,12 +474,12 @@ public class _19CSE065 {
         Scanner sc = new Scanner(System.in);
         String id = "";
 
-        p.print("Enter your ID: ");
+        p.print("Enter your ID (case insensitive): ");
         id = sc.nextLine();
         Student checkStudent = new Student("", id, "");
         checkStudent = checkStudent.isStudentAlreadyExist(checkStudent);
         if (checkStudent != null) {
-            p.println("ID recognized\n");
+            p.println("\nID recognized\n");
             FileIO IO = new FileIO();
             String fmt = "%-30s %s\n";
             System.out.printf(fmt, "Book title", "Number of copy");
@@ -499,10 +495,7 @@ public class _19CSE065 {
             p.println("User not registered");
         }
 
-        try {
-            System.in.read();
-        } catch (Exception e) {
-        }
+        br.pause();
     }
 
     // call this method when a student returns a book
@@ -511,7 +504,7 @@ public class _19CSE065 {
         p.println("Return books\n");
 
         String id = "";
-        p.print("Enter your ID: ");
+        p.print("Enter your ID (case insensitive): ");
         while (id.length() == 0) {
             id = sc.nextLine();
         }
@@ -527,10 +520,7 @@ public class _19CSE065 {
             p.println("ID is not registered");
         }
 
-        try {
-            System.in.read();
-        } catch (Exception e) {
-        }
+        br.pause();
     }
 
     public static void main(String[] args) {
