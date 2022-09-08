@@ -359,7 +359,7 @@ public class _19CSE065 {
     }
 
     // returns the borrower list of this book
-    void printAllBorrower(Book book) throws IOException {
+    void printAllBorrower() throws IOException {
         System.out.println("Borrowers\n");
         FileIO IO = new FileIO();
 
@@ -505,7 +505,7 @@ public class _19CSE065 {
                     case 4:
                         p.print("\033[H\033[2J");
                         System.out.flush();
-                        run.printAllBorrower(book);
+                        run.printAllBorrower();
                         break;
                     case 5:
                         p.print("\033[H\033[2J");
