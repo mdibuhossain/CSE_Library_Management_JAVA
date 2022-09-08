@@ -300,7 +300,7 @@ class Book extends Student {
     }
 }
 
-public class Run {
+public class _19CSE065 {
     // add a new Book in the library
     void addNewBook() throws IOException {
         System.out.println("Add new book\n");
@@ -471,7 +471,7 @@ public class Run {
             File dataPath = new File("data");
             dataPath.mkdir();
             int option;
-            Run run = new Run();
+            _19CSE065 run = new _19CSE065();
             Student student = new Student();
             Book book = new Book();
             Print p = new Print();
