@@ -531,6 +531,7 @@ public class _19CSE065 {
             _19CSE065 run = new _19CSE065();
             Print p = new Print();
             while (true) {
+                // This is for clear screen
                 p.print("\033[H\033[2J");
                 System.out.flush();
                 p.println("1. Registration");
