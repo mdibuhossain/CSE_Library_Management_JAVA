@@ -76,6 +76,8 @@ class FileIO {
                     while (fileIn.available() != 0) {
                         Book tmp = (Book) objectIn.readObject();
                         ArrayList<Book> tmpBooks = hashData.get(tmp.id);
+                        if (tmpBooks == null)
+                            tmpBooks = new ArrayList<Book>();
                         tmpBooks.add(tmp);
                         hashData.put(tmp.id, tmpBooks);
                     }
