@@ -229,33 +229,30 @@ class FileIO {
     }
 
     public Object isDataExistInDB(Object data, String path) throws IOException {
-        File file = new File(Dir.get(path));
-        if (file.isFile() && file.exists()) {
-            FileInputStream fileIn = new FileInputStream(Dir.get(path));
-            ObjectInputStream objectIn = new ObjectInputStream(fileIn);
-            try {
-                while (fileIn.available() != 0) {
-                    if (path.equalsIgnoreCase("studentsPath")) {
-                        Student check = (Student) objectIn.readObject();
-                        Student tmp = (Student) data;
-                        if (tmp.id.equalsIgnoreCase(check.id)) {
-                            return check;
-                        }
-                    } else if (path.equals("booksPath")) {
-                        Book check = (Book) objectIn.readObject();
-                        Book tmp = (Book) data;
-                        if (tmp.bookTitle.equalsIgnoreCase(check.bookTitle)) {
-                            return check;
-                        }
+        FileIO IO = new FileIO();
+        ArrayList<Book> fetchData = IO.getObjectsFromFile(path, false);
+        if (fetchData.size() > 0) {
+            if (path.equalsIgnoreCase("studentsPath")) {
+                for (int i = 0; i < fetchData.size(); i++) {
+                    Student tmp = (Student) data;
+                    if (tmp.id.equalsIgnoreCase(fetchData.get(i).id)) {
+                        Student result = new Student();
+                        result.id = fetchData.get(i).id;
+                        result.name = fetchData.get(i).name;
+                        result.phone = fetchData.get(i).phone;
+                        return result;
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                fileIn.close();
-                objectIn.close();
+                return null;
+            } else if (path.equalsIgnoreCase("booksPath")) {
+                for (int i = 0; i < fetchData.size(); i++) {
+                    Student tmp = (Student) data;
+                    if (tmp.id.equalsIgnoreCase(fetchData.get(i).id)) {
+                        return fetchData.get(i);
+                    }
+                }
+                return null;
             }
-            return null;
         }
         return null;
     }
