@@ -6,7 +6,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InputMismatchException;
@@ -30,9 +29,6 @@ class AppendingObjectOutputStream extends ObjectOutputStream {
 
     @Override
     protected void writeStreamHeader() throws IOException {
-        // do not write a header, but reset:
-        // this line added after another question
-        // showed a problem with the original
         reset();
     }
 }
@@ -40,6 +36,7 @@ class AppendingObjectOutputStream extends ObjectOutputStream {
 class FileIO {
     public HashMap<String, String> Dir = new HashMap<String, String>();
 
+    // all path list, using hashMap to store
     public FileIO() {
         Dir.put("studentsPath", "data\\students.bin");
         Dir.put("booksPath", "data\\books.bin");
@@ -47,6 +44,8 @@ class FileIO {
     }
 
     public void updateBookRequest(Student student, String bookTitle) throws IOException {
+
+        // at first, check whether data is available or not
         FileIO IO = new FileIO();
         Book checkingBook = new Book();
         checkingBook.bookTitle = bookTitle;
@@ -61,6 +60,7 @@ class FileIO {
             }
             return;
         }
+
         HashMap<String, ArrayList<Book>> hashData = new HashMap<String, ArrayList<Book>>();
         File file = new File(Dir.get("borrowersPath"));
         long fileSize = file.length();
@@ -100,7 +100,7 @@ class FileIO {
             } finally {
                 fileIn.close();
                 objectIn.close();
-                // delete previous data file
+                // delete previous data file for over write new data
                 file.delete();
             }
             try {
@@ -166,7 +166,7 @@ class FileIO {
                     objectIn.close();
                     fileOut.close();
                     objectOut.close();
-                    // delete previous data file
+                    // delete previous data file for over write new data
                     file.delete();
                 }
                 // Over-write all the data again with the new data
