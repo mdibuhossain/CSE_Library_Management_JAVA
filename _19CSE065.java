@@ -224,13 +224,13 @@ class FileIO {
                         Student check = (Student) objectIn.readObject();
                         Student tmp = (Student) data;
                         if (tmp.id.equalsIgnoreCase(check.id)) {
-                            return tmp;
+                            return check;
                         }
                     } else if (path.equals("booksPath")) {
                         Book check = (Book) objectIn.readObject();
                         Book tmp = (Book) data;
                         if (tmp.bookTitle.equalsIgnoreCase(check.bookTitle)) {
-                            return tmp;
+                            return check;
                         }
                     }
                 }
