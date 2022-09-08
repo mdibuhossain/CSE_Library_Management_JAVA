@@ -532,8 +532,8 @@ public class _19CSE065 {
             Print p = new Print();
             while (true) {
                 // This is for clear screen
-                p.print("\033[H\033[2J");
-                System.out.flush();
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
                 p.println("1. Registration");
                 p.println("2. Add New Book");
                 p.println("3. Print Books");
@@ -545,33 +545,27 @@ public class _19CSE065 {
                 option = scanner.nextInt();
                 switch (option) {
                     case 1:
-                        p.print("\033[H\033[2J");
-                        System.out.flush();
+                        new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
                         run.registration();
                         break;
                     case 2:
-                        p.print("\033[H\033[2J");
-                        System.out.flush();
+                        new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
                         run.addNewBook();
                         break;
                     case 3:
-                        p.print("\033[H\033[2J");
-                        System.out.flush();
+                        new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
                         run.printAllBook();
                         break;
                     case 4:
-                        p.print("\033[H\033[2J");
-                        System.out.flush();
+                        new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
                         run.printAllBorrower();
                         break;
                     case 5:
-                        p.print("\033[H\033[2J");
-                        System.out.flush();
+                        new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
                         run.borrowRequest();
                         break;
                     case 6:
-                        p.print("\033[H\033[2J");
-                        System.out.flush();
+                        new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
                         run.returned();
                         break;
                     case 7:
