@@ -6,9 +6,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InputMismatchException;
+import java.util.Map;
 import java.util.Scanner;
 
 class Print {
@@ -42,6 +44,70 @@ class FileIO {
         Dir.put("studentsPath", "data\\students.bin");
         Dir.put("booksPath", "data\\books.bin");
         Dir.put("borrowersPath", "data\\borrowers.bin");
+    }
+
+    public void updateBookRequest(Student student, String bookTitle) throws IOException {
+        HashMap<String, ArrayList<Book>> hashData = new HashMap<String, ArrayList<Book>>();
+        File file = new File(Dir.get("borrowersPath"));
+        long fileSize = file.length();
+        FileOutputStream fileOut = new FileOutputStream(Dir.get("borrowersPath"), true);
+        ObjectOutputStream objectOut = null;
+        if (fileSize == 0) {
+            objectOut = new ObjectOutputStream(fileOut);
+        } else {
+            objectOut = new AppendingObjectOutputStream(fileOut);
+        }
+        try {
+            FileInputStream fileIn = new FileInputStream(Dir.get("borrowersPath"));
+            ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+            ArrayList<Book> reqBook = new ArrayList<Book>();
+            Book book = new Book(bookTitle, 1);
+            reqBook.add(book);
+            hashData.put(student.id, reqBook);
+            try {
+                if (file.exists() && file.isFile()) {
+                    while (fileIn.available() != 0) {
+                        Book tmp = (Book) objectIn.readObject();
+                        ArrayList<Book> tmpBooks = (ArrayList<Book>) hashData.get(tmp.id).clone();
+                        tmpBooks.add(tmp);
+                        hashData.put(student.id, tmpBooks);
+                    }
+                }
+                // delete previous data file
+                file.delete();
+                // Over-write all the data again with the new data
+                FileOutputStream fileOut2 = new FileOutputStream(Dir.get("borrowersPath"), true);
+                ObjectOutputStream objectOut2 = new ObjectOutputStream(fileOut2);
+                try {
+                    for (Map.Entry<String, ArrayList<Book>> entry : hashData.entrySet()) {
+                        String key = entry.getKey();
+                        ArrayList<Book> value = entry.getValue();
+                        for (int i = 0; i < value.size(); i++) {
+                            Book finalBook = value.get(i);
+                            finalBook.name = key;
+                            finalBook.id = student.id;
+                            finalBook.phone = student.phone;
+                            objectOut2.writeObject(finalBook);
+                        }
+                    }
+                } catch (Exception e) {
+                } finally {
+                    fileOut2.close();
+                    objectOut2.close();
+                }
+            } catch (Exception e) {
+            } finally {
+                fileIn.close();
+                objectIn.close();
+                fileOut.close();
+                objectOut.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            objectOut.close();
+            fileOut.close();
+        }
     }
 
     public void writeObjectToFile(Object obj, String path) throws IOException {
@@ -105,13 +171,13 @@ class FileIO {
         }
     }
 
-    public void printObjectFromFile(String path) throws IOException {
+    public int printObjectFromFile(String path) throws IOException {
         File file = new File(Dir.get(path));
         if (file.exists() && file.isFile()) {
             FileInputStream fileIn = new FileInputStream(Dir.get(path));
             ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+            int count = 0;
             try {
-                int count = 0;
                 while (fileIn.available() != 0) {
                     if (path.equals("studentsPath")) {
                         Student tmp = (Student) objectIn.readObject();
@@ -140,12 +206,14 @@ class FileIO {
                 fileIn.close();
                 objectIn.close();
             }
+            return count;
         } else {
             System.out.println("No data found");
+            return 0;
         }
     }
 
-    public boolean isDataExistInDB(Object data, String path) throws IOException {
+    public Object isDataExistInDB(Object data, String path) throws IOException {
         File file = new File(Dir.get(path));
         if (file.isFile() && file.exists()) {
             FileInputStream fileIn = new FileInputStream(Dir.get(path));
@@ -156,13 +224,13 @@ class FileIO {
                         Student check = (Student) objectIn.readObject();
                         Student tmp = (Student) data;
                         if (tmp.id.equalsIgnoreCase(check.id)) {
-                            return true;
+                            return tmp;
                         }
                     } else if (path.equals("booksPath")) {
                         Book check = (Book) objectIn.readObject();
                         Book tmp = (Book) data;
                         if (tmp.bookTitle.equalsIgnoreCase(check.bookTitle)) {
-                            return true;
+                            return tmp;
                         }
                     }
                 }
@@ -172,9 +240,9 @@ class FileIO {
                 fileIn.close();
                 objectIn.close();
             }
-            return false;
+            return null;
         }
-        return false;
+        return null;
     }
 
 }
@@ -194,12 +262,10 @@ class Student implements Serializable {
         this.phone = phone;
     }
 
-    public boolean isStudentAlreadyExist(Student student) throws IOException {
+    public Student isStudentAlreadyExist(Student student) throws IOException {
         FileIO IO = new FileIO();
         // IO.isDataExistInDB(student, "studentsPath");
-        if (IO.isDataExistInDB(student, "studentsPath") == true)
-            return true;
-        return false;
+        return (Student) IO.isDataExistInDB(student, "studentsPath");
     }
 }
 
@@ -335,7 +401,7 @@ public class Run {
 
         Student student = new Student(name, id, phone);
 
-        if (student.isStudentAlreadyExist(student) == true) {
+        if (student.isStudentAlreadyExist(student) != null) {
             System.out.println("Student ID already exist");
         } else {
             FileIO IO = new FileIO();
@@ -351,13 +417,13 @@ public class Run {
     }
 
     // search the student using studentID
-    Student searchStudent(String studentID) {
-        // implement this method
-        return null;
-    }
+    // Student searchStudent(Student student) throws IOException {
+    // FileIO IO = new FileIO();
+    // return (Student) IO.isDataExistInDB(student, "studentsPath");
+    // }
 
     // call this method when a student requests to borrow a book
-    void borrowRequest(String bookTitle, Student student) throws IOException {
+    void borrowRequest() throws IOException {
         System.out.println("Borrow request\n");
         Scanner sc = new Scanner(System.in);
         String id = "";
@@ -365,8 +431,22 @@ public class Run {
         System.out.print("Enter your ID: ");
         id = sc.nextLine();
         Student checkStudent = new Student("", id, "");
-        if (checkStudent.isStudentAlreadyExist(checkStudent)) {
-            System.out.println("User registered");
+        checkStudent = checkStudent.isStudentAlreadyExist(checkStudent);
+        if (checkStudent != null) {
+            System.out.println("User registered\n");
+            FileIO IO = new FileIO();
+            String fmt = "%-30s %s\n";
+            System.out.printf(fmt, "Book title", "Number of copy");
+            System.out.printf(fmt, "---------------------", "---------------------");
+            int count = IO.printObjectFromFile("booksPath");
+            if (count > 0) {
+                String bookTitle = "";
+                System.out.print("\nEnter book name: ");
+                bookTitle = sc.nextLine();
+                IO.updateBookRequest(checkStudent, bookTitle);
+            }
+        } else {
+            System.out.println("User not registered");
         }
 
         try {
@@ -430,7 +510,7 @@ public class Run {
                     case 5:
                         p.print("\033[H\033[2J");
                         System.out.flush();
-                        run.borrowRequest("", student);
+                        run.borrowRequest();
                         break;
                     case 6:
                         p.print("\033[H\033[2J");
