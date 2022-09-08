@@ -465,7 +465,7 @@ public class _19CSE065 {
     }
 
     // call this method when a student returns a book
-    void returned(String bookTitle, Student student) {
+    void returned() {
         // implement this method
         Print p = new Print();
         p.println("Returned");
@@ -481,8 +481,6 @@ public class _19CSE065 {
             dataPath.mkdir();
             int option;
             _19CSE065 run = new _19CSE065();
-            Student student = new Student();
-            Book book = new Book();
             Print p = new Print();
             while (true) {
                 p.print("\033[H\033[2J");
@@ -524,30 +522,11 @@ public class _19CSE065 {
                     case 6:
                         p.print("\033[H\033[2J");
                         System.out.flush();
-                        run.returned("bookTitle", student);
+                        run.returned();
                         break;
                     default:
                         break;
                 }
-
-                // if (option == 1) {
-                // // take input id, name and mobile from student
-                // p.println("Registration new book");
-                // } else if (option == 2) {
-                // p.println("Add new book");
-                // }
-                // if (option == 3) {
-                // p.println("Print Books");
-                // }
-                // if (option == 4) {
-                // p.println("Print Borrower");
-                // }
-                // if (option == 5) {
-                // p.println("Borrow request");
-                // }
-                // if (option == 6) {
-                // p.println("Returned");
-                // }
             }
         } catch (Exception e) {
         }
