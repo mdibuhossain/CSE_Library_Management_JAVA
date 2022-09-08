@@ -43,6 +43,10 @@ class FileIO {
         Dir.put("borrowersPath", "data\\borrowers.bin");
     }
 
+    public void updateBookList(Book book, boolean isIncrease) {
+        //
+    }
+
     public void updateBookRequest(Student student, String bookTitle) throws IOException {
 
         // at first, check whether data is available or not
@@ -334,6 +338,8 @@ class Book extends Student {
 }
 
 public class _19CSE065 {
+    Print p = new Print();
+
     // add a new Book in the library
     void addNewBook() throws IOException {
         System.out.println("Add new book\n");
@@ -457,16 +463,16 @@ public class _19CSE065 {
 
     // call this method when a student requests to borrow a book
     void borrowRequest() throws IOException {
-        System.out.println("Borrow request\n");
+        p.println("Borrow request\n");
         Scanner sc = new Scanner(System.in);
         String id = "";
 
-        System.out.print("Enter your ID: ");
+        p.print("Enter your ID: ");
         id = sc.nextLine();
         Student checkStudent = new Student("", id, "");
         checkStudent = checkStudent.isStudentAlreadyExist(checkStudent);
         if (checkStudent != null) {
-            System.out.println("User registered\n");
+            p.println("ID recognized\n");
             FileIO IO = new FileIO();
             String fmt = "%-30s %s\n";
             System.out.printf(fmt, "Book title", "Number of copy");
@@ -474,12 +480,12 @@ public class _19CSE065 {
             ArrayList<Book> count = IO.getObjectsFromFile("booksPath", true);
             if (count.size() > 0) {
                 String bookTitle = "";
-                System.out.print("\nEnter book name: ");
+                p.print("\nEnter book name: ");
                 bookTitle = sc.nextLine();
                 IO.updateBookRequest(checkStudent, bookTitle);
             }
         } else {
-            System.out.println("User not registered");
+            p.println("User not registered");
         }
 
         try {
@@ -489,10 +495,24 @@ public class _19CSE065 {
     }
 
     // call this method when a student returns a book
-    void returned() {
-        // implement this method
-        Print p = new Print();
-        p.println("Returned");
+    void returned() throws IOException {
+        Scanner sc = new Scanner(System.in);
+        p.println("Return books\n");
+
+        String id = "";
+        p.print("Enter your ID: ");
+        while (id.length() == 0) {
+            id = sc.nextLine();
+        }
+        Student student = new Student("", id, "");
+        student = student.isStudentAlreadyExist(student);
+        if (student != null) {
+            p.println("ID recognized");
+
+        } else {
+            p.println("ID is not registered");
+        }
+
         try {
             System.in.read();
         } catch (Exception e) {
