@@ -34,6 +34,8 @@ class AppendingObjectOutputStream extends ObjectOutputStream {
 }
 
 class FileIO {
+    Print p = new Print();
+
     public HashMap<String, String> Dir = new HashMap<String, String>();
 
     // all path list, using hashMap to store
@@ -63,7 +65,7 @@ class FileIO {
             checkingBook = (Book) IO.isDataExistInDB(checkingBook, "booksPath");
             if (!(checkingBook != null && checkingBook.bookTitle.equalsIgnoreCase(bookTitle)
                     && checkingBook.numOfCopy > 0)) {
-                System.out.println("This book is not available right now!");
+                p.println("This book is not available right now!");
                 try {
                     System.in.read();
                 } catch (Exception e) {
@@ -239,7 +241,7 @@ class FileIO {
                     }
                 }
                 if (result.size() == 0 && print) {
-                    System.out.println("No data found");
+                    p.println("No data found");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -250,7 +252,7 @@ class FileIO {
             return (result);
         } else {
             if (print)
-                System.out.println("No data found");
+                p.println("No data found");
             return (result);
         }
     }
@@ -311,7 +313,6 @@ class Student implements Serializable {
 
     public Student isStudentAlreadyExist(Student student) throws IOException {
         FileIO IO = new FileIO();
-        // IO.isDataExistInDB(student, "studentsPath");
         return (Student) IO.isDataExistInDB(student, "studentsPath");
     }
 }
@@ -352,7 +353,7 @@ public class _19CSE065 {
 
     // add a new Book in the library
     void addNewBook() throws IOException {
-        System.out.println("Add new book\n");
+        p.println("Add new book\n");
 
         Scanner sc = new Scanner(System.in);
         String bookTitle = "";
@@ -366,7 +367,7 @@ public class _19CSE065 {
         try {
             numOfCopy = sc.nextInt();
         } catch (InputMismatchException e) {
-            System.out.println("\nNumber of copy field should integer number\nTry again");
+            p.println("\nNumber of copy field should integer number\nTry again");
             try {
                 System.in.read();
             } catch (Exception er) {
@@ -378,7 +379,7 @@ public class _19CSE065 {
         FileIO IO = new FileIO();
         IO.writeObjectToFile(book, "booksPath");
 
-        System.out.println("Successfully Added");
+        p.println("Successfully Added");
         try {
             System.in.read();
         } catch (Exception e) {
@@ -394,7 +395,7 @@ public class _19CSE065 {
     // print all the books in the library
     void printAllBook() throws IOException {
         // implement this method
-        System.out.println("Available Books\n");
+        p.println("Available Books\n");
         FileIO IO = new FileIO();
 
         String fmt = "%-30s %s\n";
@@ -409,7 +410,7 @@ public class _19CSE065 {
 
     // returns the borrower list of this book
     void printAllBorrower() throws IOException {
-        System.out.println("Borrowers\n");
+        p.println("Borrowers\n");
         FileIO IO = new FileIO();
 
         String fmt = "%-10s %-20s %-15s %-20s %-10s\n";
@@ -426,7 +427,7 @@ public class _19CSE065 {
     void registration() throws IOException {
         // Print p = new Print();
         // String fmt = "%1$4s %2$10s %3$10s%n";
-        System.out.println("Registration new book\n");
+        p.println("Registration new book\n");
         Scanner sc = new Scanner(System.in);
 
         String name = "";
@@ -451,12 +452,12 @@ public class _19CSE065 {
         Student student = new Student(name, id, phone);
 
         if (student.isStudentAlreadyExist(student) != null) {
-            System.out.println("Student ID already exist");
+            p.println("Student ID already exist");
         } else {
             FileIO IO = new FileIO();
             // IO.getObjectsFromFile("studentsPath");
             IO.writeObjectToFile(student, "studentsPath");
-            System.out.println("Successfully registered");
+            p.println("Successfully registered");
         }
         try {
             System.in.read();
