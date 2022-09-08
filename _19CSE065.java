@@ -45,6 +45,7 @@ class FileIO {
 
     public void updateBookList(Book book, boolean isIncrease) throws IOException {
         FileIO IO = new FileIO();
+        book = (Book) IO.isDataExistInDB(book, "booksPath");
         if (isIncrease)
             book.numOfCopy++;
         else
@@ -52,24 +53,26 @@ class FileIO {
         IO.writeObjectToFile(book, "booksPath");
     }
 
-    public void updateBookRequest(Student student, String bookTitle) throws IOException {
-
-        // at first, check whether data is available or not
-        FileIO IO = new FileIO();
-        Book checkingBook = new Book();
-        checkingBook.bookTitle = bookTitle;
-        checkingBook = (Book) IO.isDataExistInDB(checkingBook, "booksPath");
-        if (!(checkingBook != null && checkingBook.bookTitle.equalsIgnoreCase(bookTitle)
-                && checkingBook.numOfCopy > 0)) {
-            System.out.println("This book is not available right now!");
-            try {
-                System.in.read();
-            } catch (Exception e) {
+    public void updateBookRequest(Student student, String bookTitle, boolean isReturn) throws IOException {
+        // If it is not for return, then run this
+        if (!isReturn) {
+            // at first, check whether data is available or not
+            FileIO IO = new FileIO();
+            Book checkingBook = new Book();
+            checkingBook.bookTitle = bookTitle;
+            checkingBook = (Book) IO.isDataExistInDB(checkingBook, "booksPath");
+            if (!(checkingBook != null && checkingBook.bookTitle.equalsIgnoreCase(bookTitle)
+                    && checkingBook.numOfCopy > 0)) {
+                System.out.println("This book is not available right now!");
+                try {
+                    System.in.read();
+                } catch (Exception e) {
+                }
+                return;
             }
-            return;
+            // also update booklist from DB
+            updateBookList(checkingBook, false);
         }
-        // also update booklist from DB
-        updateBookList(checkingBook, false);
 
         HashMap<String, ArrayList<Book>> hashData = new HashMap<String, ArrayList<Book>>();
         File file = new File(Dir.get("borrowersPath"));
@@ -88,13 +91,15 @@ class FileIO {
         try {
             FileInputStream fileIn = new FileInputStream(Dir.get("borrowersPath"));
             ObjectInputStream objectIn = new ObjectInputStream(fileIn);
-            ArrayList<Book> reqBook = new ArrayList<Book>();
-            Book reqTmp = new Book(bookTitle, 1);
-            reqTmp.name = student.name;
-            reqTmp.id = student.id;
-            reqTmp.phone = student.phone;
-            reqBook.add(reqTmp);
-            hashData.put(student.id, reqBook);
+            if (!isReturn) {
+                ArrayList<Book> reqBook = new ArrayList<Book>();
+                Book reqTmp = new Book(bookTitle, 1);
+                reqTmp.name = student.name;
+                reqTmp.id = student.id;
+                reqTmp.phone = student.phone;
+                reqBook.add(reqTmp);
+                hashData.put(student.id, reqBook);
+            }
             try {
                 if (file.exists() && file.isFile()) {
                     while (fileIn.available() != 0) {
@@ -102,6 +107,11 @@ class FileIO {
                         ArrayList<Book> tmpBooks = hashData.get(tmp.id);
                         if (tmpBooks == null)
                             tmpBooks = new ArrayList<Book>();
+                        if (isReturn && student.id.equalsIgnoreCase(tmp.id)) {
+                            FileIO IO = new FileIO();
+                            IO.updateBookList(tmp, true);
+                            continue;
+                        }
                         tmpBooks.add(tmp);
                         hashData.put(tmp.id, tmpBooks);
                     }
@@ -122,7 +132,6 @@ class FileIO {
                         ArrayList<Book> value = entry.getValue();
                         for (int i = 0; i < value.size(); i++) {
                             objectOut2.writeObject(value.get(i));
-                            // System.out.println(value.size());
                         }
                     }
                 } catch (Exception e) {
@@ -131,15 +140,9 @@ class FileIO {
                     objectOut2.close();
                 }
             } catch (Exception e) {
-            } finally {
-                // fileOut.close();
-                // objectOut.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            // objectOut.close();
-            // fileOut.close();
         }
     }
 
@@ -489,7 +492,7 @@ public class _19CSE065 {
                 String bookTitle = "";
                 p.print("\nEnter book name: ");
                 bookTitle = sc.nextLine();
-                IO.updateBookRequest(checkStudent, bookTitle);
+                IO.updateBookRequest(checkStudent, bookTitle, false);
             }
         } else {
             p.println("User not registered");
@@ -515,6 +518,9 @@ public class _19CSE065 {
         student = student.isStudentAlreadyExist(student);
         if (student != null) {
             p.println("ID recognized");
+            FileIO IO = new FileIO();
+            IO.updateBookRequest(student, "", true);
+            p.println("\nand Books returned successfully");
 
         } else {
             p.println("ID is not registered");
@@ -541,7 +547,8 @@ public class _19CSE065 {
                 p.println("3. Print Books");
                 p.println("4. Print Borrower");
                 p.println("5. Borrow Request");
-                p.println("6. Returned\n");
+                p.println("6. Returned");
+                p.println("7. Exit\n");
                 p.print("Enter Value: ");
                 option = scanner.nextInt();
                 switch (option) {
@@ -575,6 +582,8 @@ public class _19CSE065 {
                         System.out.flush();
                         run.returned();
                         break;
+                    case 7:
+                        return;
                     default:
                         break;
                 }
