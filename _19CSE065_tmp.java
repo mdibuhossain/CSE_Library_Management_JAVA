@@ -358,7 +358,7 @@ class Book extends Student {
     }
 }
 
-public class _19CSE065 {
+public class _19CSE065_tmp {
     Print p = new Print();
     CursorBreak br = new CursorBreak();
 
@@ -528,7 +528,7 @@ public class _19CSE065 {
             File dataPath = new File("data");
             dataPath.mkdir();
             int option;
-            _19CSE065 run = new _19CSE065();
+            _19CSE065_tmp run = new _19CSE065_tmp();
             Print p = new Print();
             while (true) {
                 // This is for clear screen

@@ -104,7 +104,7 @@ class InputSystem {
 	}
 }
 
-public class Tmp_project {
+public class _19CSE065 {
 	Scanner input = new Scanner(System.in);
 	String studentsPath = "studentsPath";
 	String booksPath = "booksPath";
@@ -340,7 +340,7 @@ public class Tmp_project {
 		File dataPath = new File("data");
 		dataPath.mkdir();
 		int option = 0;
-		Tmp_project run = new Tmp_project();
+		_19CSE065 run = new _19CSE065();
 
 		run.fetchDataFromFile(run.studentsPath);
 		run.fetchDataFromFile(run.booksPath);
