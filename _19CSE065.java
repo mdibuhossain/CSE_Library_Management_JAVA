@@ -4,578 +4,383 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.InputMismatchException;
-import java.util.Map;
+import java.util.Iterator;
 import java.util.Scanner;
 
-class Print {
-    void println(String st) {
-        System.out.println(st);
-    }
-
-    void print(String st) {
-        System.out.print(st);
-    }
-}
-
-class CursorBreak {
-    void pause() {
-        System.out.println("\nPress any key to continue / back....");
-        try {
-            System.in.read();
-        } catch (Exception er) {
-        }
-    }
-}
-
-class AppendingObjectOutputStream extends ObjectOutputStream {
-    public AppendingObjectOutputStream(OutputStream out) throws IOException {
-        super(out);
-    }
-
-    @Override
-    protected void writeStreamHeader() throws IOException {
-        reset();
-    }
-}
-
-class FileIO {
-    Print p = new Print();
-
-    public HashMap<String, String> Dir = new HashMap<String, String>();
-
-    // all path list, using hashMap to store
-    public FileIO() {
-        Dir.put("studentsPath", "data\\students.bin");
-        Dir.put("booksPath", "data\\books.bin");
-        Dir.put("borrowersPath", "data\\borrowers.bin");
-    }
-
-    public void updateBookList(Book book, boolean isIncrease) throws IOException {
-        FileIO IO = new FileIO();
-        book = (Book) IO.isDataExistInDB(book, "booksPath");
-        if (isIncrease)
-            book.numOfCopy++;
-        else
-            book.numOfCopy--;
-        IO.writeObjectToFile(book, "booksPath");
-    }
-
-    public void updateBookRequest(Student student, String bookTitle, boolean isReturn) throws IOException {
-        // If it is not for return, then run this
-        if (!isReturn) {
-            // at first, check whether data is available or not
-            FileIO IO = new FileIO();
-            Book checkingBook = new Book();
-            checkingBook.bookTitle = bookTitle;
-            checkingBook = (Book) IO.isDataExistInDB(checkingBook, "booksPath");
-            if (!(checkingBook != null && checkingBook.bookTitle.equalsIgnoreCase(bookTitle)
-                    && checkingBook.numOfCopy > 0)) {
-                p.println("This book is not available right now!");
-                try {
-                    System.in.read();
-                } catch (Exception e) {
-                }
-                return;
-            }
-            // also update booklist from DB
-            updateBookList(checkingBook, false);
-        }
-
-        HashMap<String, ArrayList<Book>> hashData = new HashMap<String, ArrayList<Book>>();
-        File file = new File(Dir.get("borrowersPath"));
-        long fileSize = file.length();
-        FileOutputStream fileOut = new FileOutputStream(Dir.get("borrowersPath"), true);
-        ObjectOutputStream objectOut = null;
-        if (fileSize == 0) {
-            objectOut = new ObjectOutputStream(fileOut);
-            fileOut.close();
-            objectOut.close();
-        } else {
-            objectOut = new AppendingObjectOutputStream(fileOut);
-            fileOut.close();
-            objectOut.close();
-        }
-        try {
-            FileInputStream fileIn = new FileInputStream(Dir.get("borrowersPath"));
-            ObjectInputStream objectIn = new ObjectInputStream(fileIn);
-            if (!isReturn) {
-                ArrayList<Book> reqBook = new ArrayList<Book>();
-                Book reqTmp = new Book(bookTitle, 1);
-                reqTmp.name = student.name;
-                reqTmp.id = student.id;
-                reqTmp.phone = student.phone;
-                reqBook.add(reqTmp);
-                hashData.put(student.id, reqBook);
-            }
-            try {
-                if (file.exists() && file.isFile()) {
-                    while (fileIn.available() != 0) {
-                        Book tmp = (Book) objectIn.readObject();
-                        ArrayList<Book> tmpBooks = hashData.get(tmp.id);
-                        if (tmpBooks == null)
-                            tmpBooks = new ArrayList<Book>();
-                        if (isReturn && student.id.equalsIgnoreCase(tmp.id)) {
-                            FileIO IO = new FileIO();
-                            IO.updateBookList(tmp, true);
-                            continue;
-                        }
-                        tmpBooks.add(tmp);
-                        hashData.put(tmp.id, tmpBooks);
-                    }
-                }
-            } catch (Exception e) {
-            } finally {
-                fileIn.close();
-                objectIn.close();
-                // delete previous data file for over write new data
-                file.delete();
-            }
-            try {
-                // Over-write all the data again with the new data
-                FileOutputStream fileOut2 = new FileOutputStream(Dir.get("borrowersPath"), true);
-                ObjectOutputStream objectOut2 = new ObjectOutputStream(fileOut2);
-                try {
-                    for (Map.Entry<String, ArrayList<Book>> entry : hashData.entrySet()) {
-                        ArrayList<Book> value = entry.getValue();
-                        for (int i = 0; i < value.size(); i++) {
-                            objectOut2.writeObject(value.get(i));
-                        }
-                    }
-                } catch (Exception e) {
-                } finally {
-                    fileOut2.close();
-                    objectOut2.close();
-                }
-            } catch (Exception e) {
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void writeObjectToFile(Object obj, String path) throws IOException {
-        File file = new File(Dir.get(path));
-        long fileSize = file.length();
-        FileOutputStream fileOut = new FileOutputStream(Dir.get(path), true);
-        ObjectOutputStream objectOut = null;
-        if (fileSize == 0) {
-            objectOut = new ObjectOutputStream(fileOut);
-        } else {
-            objectOut = new AppendingObjectOutputStream(fileOut);
-        }
-        try {
-            // If write Book data then insert uniquely
-            if (path.equals("booksPath")) {
-                FileInputStream fileIn = new FileInputStream(Dir.get(path));
-                ObjectInputStream objectIn = new ObjectInputStream(fileIn);
-                ArrayList<Book> tmpData = new ArrayList<Book>();
-                tmpData.add((Book) obj);
-                try {
-                    if (file.exists() && file.isFile()) {
-                        while (fileIn.available() != 0) {
-                            Book tmp = (Book) objectIn.readObject();
-                            if (tmp.bookTitle.equalsIgnoreCase(tmpData.get(0).bookTitle)) {
-                                continue;
-                            }
-                            tmpData.add(tmp);
-                        }
-                    }
-                } catch (Exception e) {
-                } finally {
-                    fileIn.close();
-                    objectIn.close();
-                    fileOut.close();
-                    objectOut.close();
-                    // delete previous data file for over write new data
-                    file.delete();
-                }
-                // Over-write all the data again with the new data
-                FileOutputStream fileOut2 = new FileOutputStream(Dir.get(path), true);
-                ObjectOutputStream objectOut2 = new ObjectOutputStream(fileOut2);
-                try {
-                    for (int i = 0; i < tmpData.size(); i++) {
-                        objectOut2.writeObject(tmpData.get(i));
-                        objectOut2.flush();
-                    }
-                } catch (Exception e) {
-                } finally {
-                    fileOut2.close();
-                    objectOut2.close();
-                }
-            } else {
-                objectOut.writeObject(obj);
-                objectOut.flush();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            objectOut.close();
-            fileOut.close();
-        }
-    }
-
-    public ArrayList<Book> getObjectsFromFile(String path, boolean print) throws IOException {
-        File file = new File(Dir.get(path));
-        ArrayList<Book> result = new ArrayList<Book>();
-        if (file.exists() && file.isFile()) {
-            FileInputStream fileIn = new FileInputStream(Dir.get(path));
-            ObjectInputStream objectIn = new ObjectInputStream(fileIn);
-            try {
-                while (fileIn.available() != 0) {
-                    if (path.equals("studentsPath")) {
-                        Student tmp = (Student) objectIn.readObject();
-                        Book tmp2 = new Book();
-                        tmp2.name = tmp.name;
-                        tmp2.id = tmp.id;
-                        tmp2.phone = tmp.phone;
-                        result.add(tmp2);
-                        if (print)
-                            System.out.printf("%s %s %s\n", tmp.name, tmp.id, tmp.phone);
-                    } else if (path.equals("booksPath")) {
-                        Book tmp = (Book) objectIn.readObject();
-                        result.add(tmp);
-                        String fmt = "%-30s %s\n";
-                        if (print)
-                            System.out.printf(fmt, tmp.bookTitle, tmp.numOfCopy);
-                    } else if (path.equals("borrowersPath")) {
-                        Book tmp = (Book) objectIn.readObject();
-                        result.add(tmp);
-                        String fmt = "%-10s %-20s %-15s %-20s %-10s\n";
-                        if (print)
-                            System.out.printf(fmt, tmp.id, tmp.name, tmp.phone, tmp.bookTitle, "1");
-                    }
-                }
-                if (result.size() == 0 && print) {
-                    p.println("No data found");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                fileIn.close();
-                objectIn.close();
-            }
-            return (result);
-        } else {
-            if (print)
-                p.println("No data found");
-            return (result);
-        }
-    }
-
-    public Object isDataExistInDB(Object data, String path) throws IOException {
-        FileIO IO = new FileIO();
-        ArrayList<Book> fetchData = IO.getObjectsFromFile(path, false);
-        if (fetchData.size() > 0) {
-            if (path.equalsIgnoreCase("studentsPath")) {
-                for (int i = 0; i < fetchData.size(); i++) {
-                    Student tmp = (Student) data;
-                    if (tmp.id.equalsIgnoreCase(fetchData.get(i).id)) {
-                        Student result = new Student();
-                        result.id = fetchData.get(i).id;
-                        result.name = fetchData.get(i).name;
-                        result.phone = fetchData.get(i).phone;
-                        return result;
-                    }
-                }
-                return null;
-            } else if (path.equalsIgnoreCase("booksPath")) {
-                for (int i = 0; i < fetchData.size(); i++) {
-                    Book tmp = (Book) data;
-                    if (tmp.bookTitle.equalsIgnoreCase(fetchData.get(i).bookTitle)) {
-                        return fetchData.get(i);
-                    }
-                }
-                return null;
-            } else if (path.equalsIgnoreCase("borrowersPath")) {
-                for (int i = 0; i < fetchData.size(); i++) {
-                    Book tmp = (Book) data;
-                    if (tmp.id.equalsIgnoreCase(fetchData.get(i).id)) {
-                        return fetchData.get(i);
-                    }
-                }
-                return null;
-            }
-        }
-        return null;
-    }
-
-}
-
 class Student implements Serializable {
-    public String name;
-    public String id;
-    public String phone;
+	String ID;
+	String name;
+	String mobile;
 
-    public Student() {
-        name = id = phone = "";
-    }
+	Student() {
+		this.ID = "";
+		this.name = "";
+		this.mobile = "";
+	}
 
-    public Student(String name, String id, String phone) {
-        this.name = name;
-        this.id = id;
-        this.phone = phone;
-    }
-
-    public Student isStudentAlreadyExist(Student student) throws IOException {
-        FileIO IO = new FileIO();
-        return (Student) IO.isDataExistInDB(student, "studentsPath");
-    }
+	Student(String name, String ID, String mobile) {
+		this.ID = ID;
+		this.name = name;
+		this.mobile = mobile;
+	}
 }
 
 class Book extends Student {
-    String bookTitle;
-    int numOfCopy;
+	int numberOfCopy;
+	String bookTitle;
 
-    Book() {
-        bookTitle = "";
-        numOfCopy = 0;
-    }
+	Book() {
+		this.bookTitle = "";
+		this.numberOfCopy = 0;
+	}
 
-    Book(String bookTitle, int numOfCopy) {
-        this.bookTitle = bookTitle;
-        this.numOfCopy = numOfCopy;
-    }
+	Book(String bookTitle, int numberOfCopy) {
+		this.bookTitle = bookTitle;
+		this.numberOfCopy = numberOfCopy;
 
-    // this method retures whether this is book available to borrow or not
-    boolean isBookAvailable() {
-        // implement this method
-        return false;
-    }
-
-    // when a student borrow this book, then call this method
-    void borrow(String student) {
-        // implement this method
-    }
-
-    // when a student returns this book, then call this method
-    void returned(String student) {
-
-    }
+	}
 }
 
-public class _19CSE065 {
-    Print p = new Print();
-    CursorBreak br = new CursorBreak();
+class Borrower extends Book {
+	Borrower() {
+		this.ID = "";
+		this.name = "";
+		this.mobile = "";
+		this.bookTitle = "";
+		this.numberOfCopy = 0;
+	}
 
-    // add a new Book in the library
-    void addNewBook() throws IOException {
-        p.println("Add new book\n");
+	Borrower(Student student, Book book) {
+		this.ID = student.ID;
+		this.name = student.name;
+		this.mobile = student.mobile;
+		this.bookTitle = book.bookTitle;
+		this.numberOfCopy = 1;
+	}
+}
 
-        Scanner sc = new Scanner(System.in);
-        String bookTitle = "";
-        int numOfCopy = 0;
+class InputSystem {
+	Scanner input = new Scanner(System.in);
+	String frmt = "%-25s: ";
 
-        System.out.printf("%-30s: ", "Book title (case insensitive)");
-        while (bookTitle.length() == 0)
-            bookTitle = sc.nextLine();
+	public String inpBookTitle() {
+		System.out.printf(frmt, "Enter Book Title");
+		String booktitle = input.nextLine();
+		return booktitle;
+	}
 
-        System.out.printf("%-30s: ", "Number of copy");
-        try {
-            numOfCopy = sc.nextInt();
-        } catch (InputMismatchException e) {
-            p.println("\nNumber of copy field should integer number\nTry again");
-            br.pause();
-            return;
-        }
+	public int inpNumberOfCopy() {
+		System.out.printf(frmt, "Enter Number Of Copy");
+		int numcopy = 0;
+		try {
+			numcopy = input.nextInt();
+		} catch (Exception er) {
+		} finally {
+			input.nextLine();
+		}
+		return numcopy;
+	}
 
-        Book book = new Book(bookTitle, numOfCopy);
-        FileIO IO = new FileIO();
-        IO.writeObjectToFile(book, "booksPath");
+	public String inpID() {
+		System.out.printf(frmt, "Enter ID");
+		String id = input.nextLine();
+		return id;
+	}
 
-        p.println("\nSuccessfully Added");
-        br.pause();
-    }
+	public String inpName() {
+		System.out.printf(frmt, "Enter Your Name");
+		String name = input.nextLine();
+		return name;
+	}
 
-    // search a book in the library whether it is avilable or not
-    Book searchBook(String bookTitle) {
-        // implement this method
-        return null;
-    }
+	public String inpMobile() {
+		System.out.printf(frmt, "Enter Mobile Number");
+		String mobile = input.nextLine();
+		System.out.flush();
+		return mobile;
+	}
+}
 
-    // print all the books in the library
-    void printAllBook() throws IOException {
-        // implement this method
-        p.println("Available Books\n");
-        FileIO IO = new FileIO();
+public class Tmp_project {
+	Scanner input = new Scanner(System.in);
+	String studentsPath = "studentsPath";
+	String booksPath = "booksPath";
+	String borrowersPath = "borrowersPath";
+	HashMap<String, String> Dir = new HashMap<String, String>() {
+		{
+			put("studentsPath", "data\\students.bin");
+			put("booksPath", "data\\books.bin");
+			put("borrowersPath", "data\\borrowers.bin");
+		}
+	};
+	InputSystem getData = new InputSystem();
+	ArrayList<Book> bookList = new ArrayList<>();
+	ArrayList<Student> studentList = new ArrayList<>();
+	ArrayList<Borrower> borrowerList = new ArrayList<>();
 
-        String fmt = "%-30s %s\n";
-        System.out.printf(fmt, "Book title", "Number of copy");
-        System.out.printf(fmt, "---------------------", "---------------------");
-        IO.getObjectsFromFile("booksPath", true);
-        br.pause();
-    }
+	void fetchDataFromFile(String path) throws IOException {
+		File file = new File(Dir.get(path));
+		if (file.exists() && file.isFile()) {
+			FileInputStream fileIn = new FileInputStream(Dir.get(path));
+			ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+			try {
+				while (fileIn.available() != 0) {
+					if (path.equals(studentsPath)) {
+						Student tmp = (Student) objectIn.readObject();
+						studentList.add(tmp);
+					} else if (path.equals(booksPath)) {
+						Book tmp = (Book) objectIn.readObject();
+						bookList.add(tmp);
+					} else if (path.equals(borrowersPath)) {
+						Borrower tmp = (Borrower) objectIn.readObject();
+						borrowerList.add(tmp);
+					}
+				}
+			} catch (Exception e) {
+				System.out.println("\nMaybe data files corrupted.");
+				System.out.println("Delete data files and run program again\n");
+			} finally {
+				fileIn.close();
+				objectIn.close();
+			}
+		}
+	}
 
-    // returns the borrower list of this book
-    void printAllBorrower() throws IOException {
-        p.println("Borrowers\n");
-        FileIO IO = new FileIO();
+	void writeDataInFile(String path) throws IOException {
+		File file = new File(Dir.get(path));
+		file.delete();
+		FileOutputStream fileOut = new FileOutputStream(Dir.get(path), true);
+		ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+		try {
+			if (path.equals(studentsPath)) {
+				for (Student student : studentList) {
+					objectOut.writeObject(student);
+					objectOut.flush();
+				}
+			} else if (path.equals(booksPath)) {
+				for (Book book : bookList) {
+					objectOut.writeObject(book);
+					objectOut.flush();
+				}
+			} else if (path.equals(borrowersPath)) {
+				for (Borrower borro : borrowerList) {
+					objectOut.writeObject(borro);
+					objectOut.flush();
+				}
+			}
+		} catch (Exception e) {
+		} finally {
+			fileOut.close();
+			objectOut.close();
+		}
+	}
 
-        String fmt = "%-10s %-20s %-15s %-20s %-10s\n";
-        System.out.printf(fmt, "ID", "Name", "Phone", "Book title", "Number of copy");
-        System.out.printf(fmt, "-------", "--------", "-------", "----------", "---------------");
-        IO.getObjectsFromFile("borrowersPath", true);
-        br.pause();
-    }
+	public Student isStudentExist(Student student) {
+		for (int i = 0; i < studentList.size(); i++) {
+			if (student.ID.equalsIgnoreCase(studentList.get(i).ID)) {
+				return studentList.get(i);
+			}
+		}
+		return null;
+	}
 
-    // register a student if he/she is not registered before
-    void registration() throws IOException {
-        // Print p = new Print();
-        // String fmt = "%1$4s %2$10s %3$10s%n";
-        p.println("Registration new book\n");
-        Scanner sc = new Scanner(System.in);
+	public Book isBookExist(Book book) {
+		for (int i = 0; i < bookList.size(); i++) {
+			if (book.bookTitle.equalsIgnoreCase(bookList.get(i).bookTitle)) {
+				return bookList.get(i);
+			}
+		}
+		return null;
+	}
 
-        String name = "";
-        String id = "";
-        String phone = "";
+	// add a new Book in the library
+	public void addNewBook() throws IOException {
+		System.out.println();
+		String booktitle = getData.inpBookTitle();
+		int numcopy = 0;
+		numcopy = getData.inpNumberOfCopy();
+		if (numcopy == 0) {
+			System.out.println("\nInput must be integer or greater than zero\nPlease, try again.\n");
+			return;
+		}
+		Book book = new Book(booktitle, numcopy);
+		for (int i = 0; i < bookList.size(); i++) {
+			if (book.bookTitle.equalsIgnoreCase(bookList.get(i).bookTitle)) {
+				bookList.get(i).numberOfCopy = book.numberOfCopy;
+				writeDataInFile(booksPath);
+				System.out.println("\nUpdate successfully\n");
+				return;
+			}
+		}
+		bookList.add(book);
+		writeDataInFile(booksPath);
+		System.out.println("\nAdd successfully\n");
+	}
 
-        System.out.printf("%-25s: ", "ID (case insensitive)");
-        while (id.length() == 0) {
-            id = sc.nextLine();
-        }
+	// register a student if he/she is not registered before
+	public void registration() throws IOException {
+		System.out.println();
+		String id = getData.inpID();
+		String name = getData.inpName();
+		String mobile = getData.inpMobile();
+		Student student = new Student(name, id, mobile);
+		if (isStudentExist(student) != null) {
+			System.out.println("\nStudent Already Registered\n");
+		} else {
+			studentList.add(student);
+			writeDataInFile(studentsPath);
+			System.out.println("\nregistered successfully\n");
+		}
+	}
 
-        System.out.printf("%-25s: ", "Name");
-        while (name.length() == 0) {
-            name = sc.nextLine();
-        }
+	// print all the books in the library
+	public void printAllBook() {
+		System.out.println();
+		if (bookList.size() > 0) {
+			System.out.printf("%-30s %s\n", "Book Title", "Number of copy");
+			System.out.printf("%-30s %s\n", "-------------------------", "-------------------");
+			for (Book book : bookList) {
+				System.out.printf("%-30s %s\n", book.bookTitle, book.numberOfCopy);
+			}
+			System.out.println();
+		} else {
+			System.out.println("\nNo books are available!\n");
+		}
+	}
 
-        System.out.printf("%-25s: ", "Phone");
-        while (phone.length() == 0) {
-            phone = sc.nextLine();
-        }
+	void printAllBorrower() {
+		if (borrowerList.size() > 0) {
+			String frmt = "%-10s %-20s %-15s %-30s %-10s\n";
+			System.out.println();
+			System.out.printf(frmt, "ID", "Student Name", "Mobile", "Book Title", "Number Of Copy");
+			System.out.printf(frmt, "---------", "----------------", "------------", "---------------------------",
+					"---------------");
+			for (Borrower borrower : borrowerList) {
+				System.out.printf(frmt, borrower.ID, borrower.name, borrower.mobile, borrower.bookTitle,
+						borrower.numberOfCopy);
+			}
+			System.out.println();
+		} else {
+			System.out.println("\nThere are no borrower.\n");
+		}
+	}
 
-        Student student = new Student(name, id, phone);
+	// call this method when a student requests to borrow a book
+	public void borrowRequest() throws IOException {
+		System.out.println();
+		String ID = getData.inpID();
+		Student student = new Student("", ID, "");
+		student = isStudentExist(student);
+		if (student != null) {
+			printAllBook();
+			String bookTitle = getData.inpBookTitle();
+			for (Book book : bookList) {
+				if (bookTitle.equalsIgnoreCase(book.bookTitle) && book.numberOfCopy > 0) {
+					System.out.println("\nBook borrered successfully\n");
+					book.numberOfCopy--;
+					writeDataInFile(booksPath);
+					for (Borrower borro : borrowerList) {
+						if (student.ID.equalsIgnoreCase(borro.ID) && bookTitle.equalsIgnoreCase(borro.bookTitle)) {
+							borro.numberOfCopy++;
+							writeDataInFile(borrowersPath);
+							return;
+						}
+					}
+					Borrower borrower = new Borrower(student, book);
+					borrowerList.add(borrower);
+					writeDataInFile(borrowersPath);
+					return;
+				}
+			}
+			System.out.println("\nThis Book is not available in the library\n");
+		} else {
+			System.out.println("\nStudent ID not registered\n");
+		}
+	}
 
-        if (student.isStudentAlreadyExist(student) != null) {
-            p.println("\nStudent ID already exist");
-        } else {
-            FileIO IO = new FileIO();
-            // IO.getObjectsFromFile("studentsPath");
-            IO.writeObjectToFile(student, "studentsPath");
-            p.println("\nSuccessfully registered");
-        }
-        br.pause();
+	// call this method when a student returns a book
+	public void returned() throws IOException {
+		System.out.println();
+		String ID = getData.inpID();
+		Student student = new Student("", ID, "");
+		student = isStudentExist(student);
+		if (student != null) {
+			boolean isReturned = false;
+			// pupose of using iterator to delete element from ArrayList while iterating
+			Iterator<Borrower> itr = borrowerList.iterator();
+			while (itr.hasNext()) {
+				Borrower borro = itr.next();
+				if (student.ID.equalsIgnoreCase(borro.ID)) {
+					for (Book book : bookList) {
+						if (borro.bookTitle.equalsIgnoreCase(book.bookTitle)) {
+							book.numberOfCopy += borro.numberOfCopy;
+							writeDataInFile(booksPath);
+							itr.remove();
+							break;
+						}
+					}
+					isReturned = true;
+					writeDataInFile(borrowersPath);
+					System.out.println("\nAll books returned successfully\n");
+				}
+			}
+			if (isReturned) {
+				return;
+			} else
+				System.out.println("\nYou do not have any books to return.\n");
+		} else {
+			System.out.println("\nStudent ID not registered\n");
+		}
+	}
 
-    }
+	public static void main(String[] args) throws IOException {
+		File dataPath = new File("data");
+		dataPath.mkdir();
+		int option = 0;
+		Tmp_project run = new Tmp_project();
 
-    // search the student using studentID
-    // Student searchStudent(Student student) throws IOException {
-    // FileIO IO = new FileIO();
-    // return (Student) IO.isDataExistInDB(student, "studentsPath");
-    // }
+		run.fetchDataFromFile(run.studentsPath);
+		run.fetchDataFromFile(run.booksPath);
+		run.fetchDataFromFile(run.borrowersPath);
 
-    // call this method when a student requests to borrow a book
-    void borrowRequest() throws IOException {
-        p.println("Borrow request\n");
-        Scanner sc = new Scanner(System.in);
-        String id = "";
-
-        p.print("Enter your ID (case insensitive): ");
-        id = sc.nextLine();
-        Student checkStudent = new Student("", id, "");
-        checkStudent = checkStudent.isStudentAlreadyExist(checkStudent);
-        if (checkStudent != null) {
-            p.println("\nID recognized\n");
-            FileIO IO = new FileIO();
-            String fmt = "%-30s %s\n";
-            System.out.printf(fmt, "Book title", "Number of copy");
-            System.out.printf(fmt, "---------------------", "---------------------");
-            ArrayList<Book> count = IO.getObjectsFromFile("booksPath", true);
-            if (count.size() > 0) {
-                String bookTitle = "";
-                p.print("\nEnter book name: ");
-                bookTitle = sc.nextLine();
-                IO.updateBookRequest(checkStudent, bookTitle, false);
-            }
-        } else {
-            p.println("User not registered");
-        }
-
-        br.pause();
-    }
-
-    // call this method when a student returns a book
-    void returned() throws IOException {
-        Scanner sc = new Scanner(System.in);
-        p.println("Return books\n");
-
-        String id = "";
-        p.print("Enter your ID (case insensitive): ");
-        while (id.length() == 0) {
-            id = sc.nextLine();
-        }
-        Student student = new Student("", id, "");
-        student = student.isStudentAlreadyExist(student);
-        if (student != null) {
-            p.println("ID recognized");
-            FileIO IO = new FileIO();
-            IO.updateBookRequest(student, "", true);
-            p.println("\nand Books returned successfully");
-
-        } else {
-            p.println("ID is not registered");
-        }
-
-        br.pause();
-    }
-
-    public static void main(String[] args) {
-        try (Scanner scanner = new Scanner(System.in)) {
-            File dataPath = new File("data");
-            dataPath.mkdir();
-            int option;
-            _19CSE065 run = new _19CSE065();
-            Print p = new Print();
-            while (true) {
-                // This is for clear screen
-                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-                p.println("1. Registration");
-                p.println("2. Add New Book");
-                p.println("3. Print Books");
-                p.println("4. Print Borrower");
-                p.println("5. Borrow Request");
-                p.println("6. Returned");
-                p.println("7. Exit\n");
-                p.print("Enter Value: ");
-                option = scanner.nextInt();
-                switch (option) {
-                    case 1:
-                        new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-                        run.registration();
-                        break;
-                    case 2:
-                        new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-                        run.addNewBook();
-                        break;
-                    case 3:
-                        new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-                        run.printAllBook();
-                        break;
-                    case 4:
-                        new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-                        run.printAllBorrower();
-                        break;
-                    case 5:
-                        new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-                        run.borrowRequest();
-                        break;
-                    case 6:
-                        new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-                        run.returned();
-                        break;
-                    case 7:
-                        return;
-                    default:
-                        break;
-                }
-            }
-        } catch (Exception e) {
-        }
-    }
-
+		while (true) {
+			System.out.println("Registration: 1");
+			System.out.println("Add New Book: 2");
+			System.out.println("Print Books: 3");
+			System.out.println("Print Borrower: 4");
+			System.out.println("Borrow Request: 5");
+			System.out.println("Returned: 6");
+			System.out.println("Terminate: 7");
+			System.out.print("\nEnter Value: ");
+			try {
+				option = run.input.nextInt();
+			} catch (Exception er) {
+				System.out.println("\nInput must be in this (1-7) range\nTry again\n");
+				continue;
+			} finally {
+				run.input.nextLine();
+			}
+			if (option == 1) {
+				run.registration();
+			} else if (option == 2) {
+				run.addNewBook();
+			} else if (option == 3) {
+				run.printAllBook();
+			} else if (option == 4) {
+				run.printAllBorrower();
+			} else if (option == 5) {
+				run.borrowRequest();
+			} else if (option == 6) {
+				run.returned();
+			} else if (option == 7) {
+				return;
+			} else {
+				System.out.println("\nWrong command");
+				System.out.println("Try again\n");
+			}
+		}
+	}
 }
