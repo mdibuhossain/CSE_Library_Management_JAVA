@@ -324,10 +324,10 @@ public class _19CSE065 {
 					}
 					isReturned = true;
 					writeDataInFile(borrowersPath);
-					System.out.println("\nAll books returned successfully\n");
 				}
 			}
 			if (isReturned) {
+				System.out.println("\nAll books returned successfully\n");
 				return;
 			} else
 				System.out.println("\nYou do not have any books to return.\n");
