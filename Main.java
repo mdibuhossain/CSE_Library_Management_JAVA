@@ -104,7 +104,7 @@ class InputSystem {
 	}
 }
 
-public class run {
+public class Main {
 	Scanner input = new Scanner(System.in);
 	String studentsPath = "studentsPath";
 	String booksPath = "booksPath";
@@ -340,7 +340,7 @@ public class run {
 		File dataPath = new File("data");
 		dataPath.mkdir();
 		int option = 0;
-		run run = new run();
+		Main run = new Main();
 
 		run.fetchDataFromFile(run.studentsPath);
 		run.fetchDataFromFile(run.booksPath);

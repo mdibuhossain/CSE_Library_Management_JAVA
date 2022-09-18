@@ -358,7 +358,7 @@ class Book extends Student {
     }
 }
 
-public class run_complex {
+public class Main_tmp {
     Print p = new Print();
     CursorBreak br = new CursorBreak();
 
@@ -528,7 +528,7 @@ public class run_complex {
             File dataPath = new File("data");
             dataPath.mkdir();
             int option;
-            run_complex run = new run_complex();
+            Main_tmp run = new Main_tmp();
             Print p = new Print();
             while (true) {
                 // This is for clear screen
