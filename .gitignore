@@ -1,15 +1,7 @@
 .cph
-Assignment_1/.cph
-Assignment_2/.cph
 
 *.class
-Assignment_1/*.class
-Assignment_2/*.class
 
 data
-Assignment_1/data
-Assignment_2/data
 
 tempCodeRunnerFile.java
-Assignment_1/tempCodeRunnerFile.java
-Assignment_2/tempCodeRunnerFile.java
