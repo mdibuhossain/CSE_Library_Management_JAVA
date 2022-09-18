@@ -358,7 +358,7 @@ class Book extends Student {
     }
 }
 
-public class _19CSE065_tmp {
+public class run_complex {
     Print p = new Print();
     CursorBreak br = new CursorBreak();
 
@@ -528,11 +528,10 @@ public class _19CSE065_tmp {
             File dataPath = new File("data");
             dataPath.mkdir();
             int option;
-            _19CSE065_tmp run = new _19CSE065_tmp();
+            run_complex run = new run_complex();
             Print p = new Print();
             while (true) {
                 // This is for clear screen
-                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
                 new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
                 p.println("1. Registration");
                 p.println("2. Add New Book");
